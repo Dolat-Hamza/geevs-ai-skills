@@ -61,6 +61,8 @@ def active_slug():
 def cmd_new(args):
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]{1,40}", args.slug):
         raise StateError("slug must be lowercase letters, digits and dashes")
+    if ACTIVE.exists() and ACTIVE.read_text().strip() != args.slug:
+        raise StateError(f"run '{ACTIVE.read_text().strip()}' is still open; set it to done or blocked first")
     folder = run_dir(args.slug)
     if folder.exists():
         raise StateError(f"run '{args.slug}' exists")

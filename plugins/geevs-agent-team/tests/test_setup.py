@@ -33,7 +33,14 @@ class Setup(unittest.TestCase):
 
     def test_leaves_no_tracked_changes(self):
         setup_project.setup(self.root)
+        (self.root / ".claude/worktrees/agent-1").mkdir(parents=True)
+        (self.root / ".claude/worktrees/agent-1/f.txt").write_text("x")
         self.assertEqual(git(self.root, "status", "--porcelain"), "")
+
+    def test_marker_records_plugin_version(self):
+        setup_project.setup(self.root)
+        marker = json.loads((self.root / setup_project.MARKER).read_text())
+        self.assertEqual(marker["version"], setup_project.VERSION)
 
     def test_marker_survives_branch_switch(self):
         (self.root / "a.txt").write_text("a")

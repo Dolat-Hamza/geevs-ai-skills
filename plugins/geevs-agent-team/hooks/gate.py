@@ -99,19 +99,19 @@ def on_agent_start(event, root):
     return None
 
 
-def on_agent_done(event, root):
+def on_subagent_stop(event, root):
     folder, state = active_run(root)
     if state is None:
         return None
-    response = event.get("tool_response")
-    response = response if isinstance(response, dict) else {}
-    usage, model = response.get("usage"), response.get("resolvedModel")
-    usd = round(cost.usage_usd(usage, model), 4) if usage else None
-    append_spend(folder, {"agent": event.get("tool_input", {}).get("subagent_type"), "model": model, "usd": usd})
+    usd, models = cost.agent_transcript_usd(event.get("agent_transcript_path", ""))
+    entry = {"agent_id": event.get("agent_id"), "agent": event.get("agent_type"), "models": models}
+    append_spend(folder, {**entry, "usd": round(usd, 4)})
     return None
 
 
-def on_stop(_event, root):
+def on_stop(event, root):
+    if event.get("stop_hook_active"):
+        return None
     _, state = active_run(root)
     if state is None:
         return None
@@ -124,7 +124,7 @@ def on_stop(_event, root):
 
 
 PRE = {"Bash": on_bash, "Write": on_write, "Edit": on_write, "MultiEdit": on_write, "Agent": on_agent_start}
-POST = {"Agent": on_agent_done}
+EVENTS = {"Stop": on_stop, "SubagentStop": on_subagent_stop}
 
 
 def handle(event):
@@ -132,10 +132,9 @@ def handle(event):
     if root is None:
         return None
     kind = event.get("hook_event_name")
-    if kind == "Stop":
-        return on_stop(event, root)
-    table = POST if kind == "PostToolUse" else PRE
-    handler = table.get(event.get("tool_name", ""))
+    if kind in EVENTS:
+        return EVENTS[kind](event, root)
+    handler = PRE.get(event.get("tool_name", "")) if kind == "PreToolUse" else None
     return handler(event, root) if handler else None
 
 

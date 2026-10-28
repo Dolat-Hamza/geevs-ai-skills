@@ -70,6 +70,14 @@ class Lifecycle(InTempDir):
         self.start()
         self.assertEqual(call("phase", "fee-fix", "shipped")[0], 1)
 
+    def test_second_open_run_refused(self):
+        self.start()
+        code, _, err = call("new", "other-run", "x")
+        self.assertEqual(code, 1)
+        self.assertIn("fee-fix", err)
+        call("phase", "fee-fix", "blocked")
+        self.assertEqual(call("new", "other-run", "x")[0], 0)
+
     def test_done_clears_active_marker(self):
         self.start()
         call("phase", "fee-fix", "done")

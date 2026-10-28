@@ -71,6 +71,16 @@ class Transcript(unittest.TestCase):
         self.assertEqual(cost.transcript_usd("/no/such/file", ""), 0.0)
 
 
+class AgentTranscript(unittest.TestCase):
+    def test_sums_all_entries_once_with_models(self):
+        lines = [entry("t", "a", USAGE), entry("t", "a", USAGE), entry("t", "b", USAGE, model="claude-haiku-5-5")]
+        with tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False) as f:
+            f.write("\n".join(lines))
+        usd, models = cost.agent_transcript_usd(f.name)
+        self.assertAlmostEqual(usd, 0.013 + cost.usage_usd(USAGE, "claude-haiku-5-5"))
+        self.assertEqual(models, ["claude-haiku-5-5", "claude-sonnet-5-5"])
+
+
 class RunTotal(unittest.TestCase):
     def test_sums_agents_and_takes_latest_main_snapshot(self):
         with tempfile.NamedTemporaryFile("w", suffix=".jsonl", delete=False) as f:
@@ -79,10 +89,11 @@ class RunTotal(unittest.TestCase):
                     json.dumps(e)
                     for e in [
                         {"main_usd": 0.5},
-                        {"agent": "researcher", "usd": 0.2},
+                        {"agent_id": "r1", "usd": 0.2},
                         {"main_usd": 0.9},
-                        {"agent": "builder", "usd": 1.1},
-                        {"agent": "background", "usd": None},
+                        {"agent_id": "b1", "usd": 0.4},
+                        {"agent_id": "b1", "usd": 1.1},
+                        {"agent_id": "x1", "usd": None},
                     ]
                 )
             )

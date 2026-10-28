@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.2 — 2026-10-29
+Fixes from the 1.1.1 live test.
+- Agent spend is read from the agent transcript at `SubagentStop`. Background agents reported no usage to `PostToolUse`, so 1.1.1 logged their cost as unknown and the budget saw only the orchestrator.
+- Stop hook lets the second stop attempt through (`stop_hook_active`).
+- Deliver text no longer contains `$5` or `$RS`, which skill argument substitution and zsh broke.
+- Setup excludes `.claude/worktrees/` and records the installed plugin version.
+- `run_state new` refuses to replace an open run.
+
 ## 1.1.1 — 2026-10-29
 - `deliver` and `setup` can be started by Claude as well as typed. The human gates (spec approval, push, merge, deploy) are unchanged.
 

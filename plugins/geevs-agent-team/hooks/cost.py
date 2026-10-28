@@ -65,10 +65,24 @@ def transcript_usd(path, since):
     return sum(seen.values())
 
 
+def agent_transcript_usd(path):
+    """Total spend and models used in a sub-agent transcript."""
+    seen, models = {}, set()
+    for entry in json_lines(path):
+        message = entry.get("message")
+        if entry.get("type") != "assistant" or not isinstance(message, dict) or "usage" not in message:
+            continue
+        seen[message.get("id") or len(seen)] = usage_usd(message["usage"], message.get("model"))
+        models.add(message.get("model") or "unknown")
+    return sum(seen.values()), sorted(models)
+
+
 def run_total(spend_log):
-    """Sum of agent spend plus the latest main-session snapshot in a spend.jsonl log."""
-    agents, main = 0.0, 0.0
+    """Latest spend per agent id plus the latest main-session snapshot in a spend.jsonl log."""
+    agents, main = {}, 0.0
     for entry in json_lines(spend_log):
-        agents += entry.get("usd") or 0
-        main = entry.get("main_usd", main)
-    return round(agents + main, 4)
+        if "main_usd" in entry:
+            main = entry["main_usd"]
+        elif entry.get("usd") is not None:
+            agents[entry.get("agent_id") or len(agents)] = entry["usd"]
+    return round(sum(agents.values()) + main, 4)

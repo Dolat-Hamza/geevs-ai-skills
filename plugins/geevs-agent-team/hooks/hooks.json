@@ -6,9 +6,8 @@
         "hooks": [{ "type": "command", "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/gate.py\"" }]
       }
     ],
-    "PostToolUse": [
+    "SubagentStop": [
       {
-        "matcher": "Agent",
         "hooks": [{ "type": "command", "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/gate.py\"" }]
       }
     ],

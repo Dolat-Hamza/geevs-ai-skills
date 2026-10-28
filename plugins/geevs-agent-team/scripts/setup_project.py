@@ -5,10 +5,12 @@ import pathlib
 import subprocess
 import sys
 
-VERSION = "1.1.0"
+VERSION = json.loads((pathlib.Path(__file__).resolve().parents[1] / ".claude-plugin/plugin.json").read_text())[
+    "version"
+]
 SETTINGS = ".claude/settings.local.json"
 MARKER = ".claude/agent-team.local.json"
-EXCLUDES = (".agents/", SETTINGS, MARKER)
+EXCLUDES = (".agents/", ".claude/worktrees/", SETTINGS, MARKER)
 RULES = {
     "deny": [
         "Bash(git push --force *)",

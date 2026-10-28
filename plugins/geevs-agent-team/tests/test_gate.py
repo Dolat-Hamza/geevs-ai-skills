@@ -121,6 +121,11 @@ class StopGate(Project):
     def test_no_active_run_allows(self):
         self.assertIsNone(self.stop())
 
+    def test_second_stop_attempt_allowed(self):
+        self.start_run("build", False)
+        result = run({"hook_event_name": "Stop", "cwd": str(self.root), "stop_hook_active": True})[1]
+        self.assertIsNone(result)
+
 
 class Budget(Project):
     def setUp(self):
@@ -146,21 +151,24 @@ class Budget(Project):
             }
         )[1]
 
-    def finish(self, response):
+    def finish(self, agent_id, usage):
+        transcript = self.root / f"{agent_id}.jsonl"
+        message = {"id": "m1", "model": "claude-sonnet-5-5", "usage": usage}
+        transcript.write_text(json.dumps({"type": "assistant", "message": message}) + "\n")
         return run(
             {
-                "hook_event_name": "PostToolUse",
-                "tool_name": "Agent",
+                "hook_event_name": "SubagentStop",
                 "cwd": str(self.root),
-                "tool_input": {"subagent_type": "geevs-agent-team:builder"},
-                "tool_response": response,
+                "agent_id": agent_id,
+                "agent_type": "geevs-agent-team:builder",
+                "agent_transcript_path": str(transcript),
             }
         )[1]
 
     def log(self):
         return [json.loads(line) for line in (self.run_dir / "spend.jsonl").read_text().splitlines()]
 
-    def test_finished_agent_spend_logged(self):
+    def test_subagent_spend_logged_from_its_transcript(self):
         self.state(5.0)
         usage = {
             "input_tokens": 1000,
@@ -168,15 +176,23 @@ class Budget(Project):
             "cache_read_input_tokens": 10000,
             "output_tokens": 500,
         }
-        self.finish({"usage": usage, "resolvedModel": "claude-sonnet-5-5"})
+        self.assertIsNone(self.finish("a1", usage))
         self.assertEqual(
-            self.log()[-1], {"agent": "geevs-agent-team:builder", "model": "claude-sonnet-5-5", "usd": 0.013}
+            self.log()[-1],
+            {"agent_id": "a1", "agent": "geevs-agent-team:builder", "models": ["claude-sonnet-5-5"], "usd": 0.013},
         )
 
-    def test_background_agent_without_usage_logged_as_unknown(self):
+    def test_missing_agent_transcript_logs_zero(self):
         self.state(5.0)
-        self.finish({"status": "async_launched"})
-        self.assertIsNone(self.log()[-1]["usd"])
+        run(
+            {
+                "hook_event_name": "SubagentStop",
+                "cwd": str(self.root),
+                "agent_id": "a2",
+                "agent_transcript_path": "/no/such/file",
+            }
+        )
+        self.assertEqual(self.log()[-1]["usd"], 0)
 
     def test_spawn_under_budget_passes(self):
         self.state(5.0)
