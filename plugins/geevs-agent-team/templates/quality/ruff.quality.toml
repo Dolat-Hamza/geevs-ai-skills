@@ -1,0 +1,11 @@
+# Quality limits from QUALITY.md section 2. Merge into the project's ruff config.
+[lint]
+extend-select = ["C901", "PLR0912", "PLR0913", "PLR0915", "B", "S", "SIM", "UP"]
+
+[lint.mccabe]
+max-complexity = 10
+
+[lint.pylint]
+max-args = 4
+max-statements = 30
+max-branches = 10

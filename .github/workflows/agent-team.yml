@@ -1,0 +1,39 @@
+name: agent-team
+
+on:
+  pull_request:
+    paths: ["plugins/geevs-agent-team/**", ".claude-plugin/**", ".github/workflows/agent-team.yml"]
+  push:
+    branches: [main]
+    paths: ["plugins/geevs-agent-team/**", ".claude-plugin/**", ".github/workflows/agent-team.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff==0.6.9
+      - name: Lint and complexity
+        run: ruff check --select C901,PLR0911,PLR0912,PLR0913,PLR0915,E,F,B,SIM,UP --line-length 120 plugins/geevs-agent-team/hooks plugins/geevs-agent-team/scripts
+      - name: Version consistency
+        run: python plugins/geevs-agent-team/scripts/versions.py check
+      - name: Hook tests
+        run: python -m unittest discover -s plugins/geevs-agent-team/hooks/tests
+      - name: Manifests valid
+        run: |
+          python -c "import json; json.load(open('plugins/geevs-agent-team/.claude-plugin/plugin.json'))"
+          python -c "import json; json.load(open('plugins/geevs-agent-team/hooks/hooks.json'))"
+          python -c "import json; json.load(open('.claude-plugin/marketplace.json'))"
+          python -c "import json,sys; d=json.load(open('plugins/geevs-agent-team/.claude-plugin/plugin.json')); bad=[k for k in ('agents','skills','hooks') if isinstance(d.get(k),str) and d[k].endswith('/')]; sys.exit(f'path keys not allowed: {bad}') if bad else None"
+      - name: Agent frontmatter
+        run: |
+          for f in plugins/geevs-agent-team/agents/*.md; do
+            head -1 "$f" | grep -qx -- '---' || { echo "missing frontmatter: $f"; exit 1; }
+            grep -q '^name: ' "$f" && grep -q '^description: ' "$f" && grep -q '^tools: ' "$f" || { echo "bad frontmatter: $f"; exit 1; }
+          done
