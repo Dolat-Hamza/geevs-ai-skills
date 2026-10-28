@@ -13,3 +13,4 @@ node_modules/
 # Archives (source is tracked, not zips)
 *.zip
 *.plugin
+.ruff_cache/

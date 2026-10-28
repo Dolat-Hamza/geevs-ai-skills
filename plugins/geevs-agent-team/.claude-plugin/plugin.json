@@ -1,9 +1,10 @@
 {
   "name": "geevs-agent-team",
-  "description": "Geevs agent team: orchestrator, product/research, designer, developer, producer, QA, reviewer and specialist agents (architecture, security, performance, compliance, domain) plus the /deliver 8-stage pipeline, /fix-issue bug pipeline, /agent-team-setup scaffolding, LAWS.md and QUALITY.md governing precedence, question budgets, loop limits and issue handling, code quality and compliance, with hooks enforcing the hard rules. Works for code and non-code deliverables.",
-  "version": "0.2.2",
+  "version": "1.1.2",
+  "description": "Gated delivery for code and documents: interview, research, spec, isolated build, independent review, human release. Gates, budgets and run state are enforced by scripts and hooks.",
   "author": {
     "name": "Geevs"
   },
+  "repository": "https://github.com/Dolat-Hamza/geevs-ai-skills",
   "license": "MIT"
 }

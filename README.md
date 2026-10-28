@@ -5,7 +5,7 @@ Claude Code) and compatible agent runtimes — spanning engineering, product,
 design/UX, business growth, and finance.
 
 - **8 plugin bundles** (`plugins/`) — each installs a whole set of skills at once
-- **geevs-agent-team** (`plugins/geevs-agent-team/`) — the agent roles and `/deliver` pipeline that use the skills; see its README
+- **geevs-agent-team** (`plugins/geevs-agent-team/`) — gated delivery: `/deliver` with researcher, builder and reviewer agents; see its README
 - **12 standalone skills** (`skills/`) — individual, self-contained skills
 - **~115 skill units** total
 
@@ -15,7 +15,7 @@ See **[CATALOG.md](CATALOG.md)** for the full list with descriptions.
 
 ```
 plugins/     # Installable plugin bundles (each has .claude-plugin/plugin.json)
-  geevs-agent-team/              # 12 agents + /deliver pipeline + /agent-team-setup
+  geevs-agent-team/              # /deliver + setup, 3 agents, enforced gates
   engineering-advanced-skills/   # 29 engineering tooling/workflow skills
   engineering-skills/            # senior specialists (architect, backend, devops, ...)
   product-skills/                # product strategy, discovery, analytics, ...

@@ -116,20 +116,16 @@ Everything in this repo. **8 plugin bundles** and **12 standalone skills** (≈1
 | **financial-analyst** | Performs financial ratio analysis, DCF valuation, budget variance analysis, and rolling forecast construction for strategic decision-making… |
 | **saas-metrics-coach** | SaaS financial health advisor. Use when a user shares revenue or customer numbers, or mentions ARR, MRR, churn, LTV, CAC, NRR, or asks how … |
 
-### `geevs-agent-team` — 12 agents, 2 skills
+### `geevs-agent-team` — 3 agents, 2 skills
 
 | Component | What it does |
 |---|---|
-| **orchestrator** (agent) | Breaks goals into tasks, delegates to the other agents, tracks status, resolves blockers |
-| **product-research** (agent) | Research and evidence-backed specification with binary acceptance criteria |
-| **designer** (agent) | UX flows, structure, states, format and implementation guidance |
-| **developer** (agent) | Implements one scoped coding task in an isolated branch, tests, reports |
-| **producer** (agent) | Creates one scoped non-code deliverable, self-checks, reports |
-| **qa** (agent) | Independent verification against the spec, defects with repro |
-| **reviewer** (agent) | Code, security, consistency and release-readiness review, go/no-go |
-| **specialist-architect / -security / -performance / -compliance / -domain** (agents) | Advisory assessments pulled in by the orchestrator |
-| **deliver** (skill) | `/deliver <goal>`: 8-stage pipeline with gated handoff artifacts |
-| **agent-team-setup** (skill) | `/agent-team-setup`: scaffolds knowledge docs, CLAUDE.md section and run folder into a project |
+| **deliver** (skill) | `/geevs-agent-team:deliver <goal>`: interview, research, spec, isolated build, independent review, human release |
+| **setup** (skill) | Opts a project clone in: local permission rules and hook marker, excluded from git |
+| **researcher** (agent) | One question, cited findings written to a file |
+| **builder** (agent) | Implements the approved spec in its own worktree |
+| **reviewer** (agent) | Verifies each acceptance criterion and records evidence; cannot edit |
+| **budget** (hook) | Logs spend per run and asks before agent spawns past the budget |
 
 ### `product-skills` — 13 skills
 
