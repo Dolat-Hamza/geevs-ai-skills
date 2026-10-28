@@ -32,7 +32,7 @@ class Project(unittest.TestCase):
         self.root = pathlib.Path(self.tmp.name)
         git(self.root, "init", "-q", "-b", "main")
         (self.root / ".claude").mkdir()
-        (self.root / ".claude/agent-team.json").write_text("{}")
+        (self.root / ".claude/agent-team.local.json").write_text("{}")
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -120,6 +120,80 @@ class StopGate(Project):
 
     def test_no_active_run_allows(self):
         self.assertIsNone(self.stop())
+
+
+class Budget(Project):
+    def setUp(self):
+        super().setUp()
+        self.run_dir = self.root / ".agents/runs/r1"
+        self.run_dir.mkdir(parents=True)
+        (self.root / ".agents/active-run").write_text("r1\n")
+        self.transcript = self.root / "t.jsonl"
+        self.transcript.write_text("")
+
+    def state(self, budget):
+        state = {"phase": "build", "criteria": [], "created_at": "2026-10-29T00:00:00.000Z", "budget_usd": budget}
+        (self.run_dir / "progress.json").write_text(json.dumps(state))
+
+    def spawn(self):
+        return run(
+            {
+                "hook_event_name": "PreToolUse",
+                "tool_name": "Agent",
+                "cwd": str(self.root),
+                "transcript_path": str(self.transcript),
+                "tool_input": {"subagent_type": "builder"},
+            }
+        )[1]
+
+    def finish(self, response):
+        return run(
+            {
+                "hook_event_name": "PostToolUse",
+                "tool_name": "Agent",
+                "cwd": str(self.root),
+                "tool_input": {"subagent_type": "geevs-agent-team:builder"},
+                "tool_response": response,
+            }
+        )[1]
+
+    def log(self):
+        return [json.loads(line) for line in (self.run_dir / "spend.jsonl").read_text().splitlines()]
+
+    def test_finished_agent_spend_logged(self):
+        self.state(5.0)
+        usage = {
+            "input_tokens": 1000,
+            "cache_creation_input_tokens": 2000,
+            "cache_read_input_tokens": 10000,
+            "output_tokens": 500,
+        }
+        self.finish({"usage": usage, "resolvedModel": "claude-sonnet-5-5"})
+        self.assertEqual(
+            self.log()[-1], {"agent": "geevs-agent-team:builder", "model": "claude-sonnet-5-5", "usd": 0.013}
+        )
+
+    def test_background_agent_without_usage_logged_as_unknown(self):
+        self.state(5.0)
+        self.finish({"status": "async_launched"})
+        self.assertIsNone(self.log()[-1]["usd"])
+
+    def test_spawn_under_budget_passes(self):
+        self.state(5.0)
+        self.assertIsNone(self.spawn())
+        self.assertEqual(self.log()[-1], {"main_usd": 0.0})
+
+    def test_spawn_over_budget_asks(self):
+        self.state(1.0)
+        (self.run_dir / "spend.jsonl").write_text(json.dumps({"agent": "x", "usd": 1.5}) + "\n")
+        result = self.spawn()
+        self.assertEqual(result["hookSpecificOutput"]["permissionDecision"], "ask")
+        self.assertIn("$1.50", result["hookSpecificOutput"]["permissionDecisionReason"])
+
+    def test_no_active_run_ignores_agents(self):
+        (self.root / ".agents/active-run").unlink()
+        self.assertIsNone(self.spawn())
+        self.assertFalse((self.run_dir / "spend.jsonl").exists())
 
 
 class NotOptedIn(unittest.TestCase):

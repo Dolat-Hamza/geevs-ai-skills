@@ -7,16 +7,22 @@ disable-model-invocation: true
 
 # Deliver: $ARGUMENTS
 
-Set `RS="python3 <this skill's base directory>/../../scripts/run_state.py"` with the absolute path, and run it from the project root. If `.claude/agent-team.json` is missing, run `/geevs-agent-team:setup` first.
+Set `RS="python3 <this skill's base directory>/../../scripts/run_state.py"` with the absolute path, and run it from the project root. If `.claude/agent-team.local.json` is missing, run `/geevs-agent-team:setup` first.
+
+## Cost rules
+- Start each run in a fresh session (`/clear`); the orchestrating conversation is re-read on every call.
+- Do not change model or effort during a run; either change invalidates the prompt cache.
+- Pass file paths in briefs, never file contents. Agents write to files and return short summaries.
+- Check spend with `$RS status <slug>`. A hook asks before any agent spawn once the budget is reached.
 
 ## 1. Interview
 Ask at most four questions with AskUserQuestion, only what the request, repo and docs do not answer: the goal, who uses the result, constraints, and what done looks like.
 
 ## 2. Start
-`$RS new <slug> "<goal>"` prints the run folder's absolute path. Use absolute paths in every brief.
+`$RS new <slug> "<goal>" [--budget-usd N]` prints the run folder's absolute path. The default budget is $5 of estimated API cost. Use absolute paths in every brief.
 
 ## 3. Research
-Spawn `researcher` agents only for open questions: none if the repo answers it, otherwise one per independent question, at most three in parallel. Each writes `<run>/research/<topic>.md`.
+Spawn `researcher` agents only for open questions: none if the repo or one search answers it, otherwise one per independent question, at most three in parallel. Each writes `<run>/research/<topic>.md`.
 
 ## 4. Spec
 Fill `<run>/spec.md`. Each acceptance criterion is `- [ ] ACn: <observable pass/fail statement and how to check it>`. For a bug, record the exact reproduction command and output; AC1 is that it no longer reproduces. Run `$RS criteria <slug>`.

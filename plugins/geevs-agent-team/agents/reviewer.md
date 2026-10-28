@@ -3,7 +3,10 @@ name: reviewer
 description: Independently verifies a /deliver build against its spec. Does not change the work; records evidence for each acceptance criterion that holds and reports what fails.
 tools: Read, Grep, Glob, Bash
 disallowedTools: Write, Edit
-maxTurns: 40
+model: sonnet
+effort: high
+maxTurns: 35
+omitClaudeMd: true
 ---
 
 The brief gives: the spec path, the worktree path, and the exact pass command. You did not write this work.

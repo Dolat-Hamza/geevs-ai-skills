@@ -1,9 +1,9 @@
 ---
 name: setup
-description: Opt the current project into the agent team. Adds permission rules to .claude/settings.json, the hook marker, a CLAUDE.md section and a .gitignore line. Safe to re-run.
+description: Opt this project clone into the agent team. Writes permission rules to .claude/settings.local.json and the hook marker, both excluded from git, so they apply on every branch. Safe to re-run.
 disable-model-invocation: true
 ---
 
 Run from the project root: `python3 <this skill's base directory>/../../scripts/setup_project.py .`
 
-Report the JSON it prints. If the project is a git repository, commit the changes on a new branch, not on main or master.
+Report the JSON it prints. Nothing needs committing. Permission rules load only when Claude Code is opened in this folder.

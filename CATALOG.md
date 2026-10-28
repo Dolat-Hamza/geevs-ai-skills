@@ -121,10 +121,11 @@ Everything in this repo. **8 plugin bundles** and **12 standalone skills** (≈1
 | Component | What it does |
 |---|---|
 | **deliver** (skill) | `/geevs-agent-team:deliver <goal>`: interview, research, spec, isolated build, independent review, human release |
-| **setup** (skill) | Opts a project in: permission rules, hook marker, CLAUDE.md section |
+| **setup** (skill) | Opts a project clone in: local permission rules and hook marker, excluded from git |
 | **researcher** (agent) | One question, cited findings written to a file |
 | **builder** (agent) | Implements the approved spec in its own worktree |
 | **reviewer** (agent) | Verifies each acceptance criterion and records evidence; cannot edit |
+| **budget** (hook) | Logs spend per run and asks before agent spawns past the budget |
 
 ### `product-skills` — 13 skills
 

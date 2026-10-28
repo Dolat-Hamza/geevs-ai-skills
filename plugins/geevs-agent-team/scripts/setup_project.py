@@ -1,10 +1,14 @@
-"""Opt a project into the agent team: permission rules, hook marker, CLAUDE.md section. Idempotent."""
+"""Opt a project clone into the agent team. Writes only untracked files, so it applies on every branch."""
 
 import json
 import pathlib
+import subprocess
 import sys
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
+SETTINGS = ".claude/settings.local.json"
+MARKER = ".claude/agent-team.local.json"
+EXCLUDES = (".agents/", SETTINGS, MARKER)
 RULES = {
     "deny": [
         "Bash(git push --force *)",
@@ -35,15 +39,6 @@ RULES = {
         "Bash(helm upgrade *)",
     ],
 }
-CLAUDE_HEADING = "## Agent team"
-CLAUDE_SECTION = f"""
-{CLAUDE_HEADING}
-- Non-trivial work goes through `/geevs-agent-team:deliver <goal>`.
-- Run state lives in `.agents/runs/<slug>/`: `spec.md`, `progress.json`, `review.md`, `research/`.
-- A criterion passes only with recorded evidence from the reviewer.
-- Pushes, merges, deploys and publishes ask a human; see `.claude/settings.json`.
-"""
-IGNORE_LINE = ".agents/active-run"
 
 
 def merge_rules(settings):
@@ -59,7 +54,7 @@ def merge_rules(settings):
 
 
 def write_settings(root):
-    path = root / ".claude/settings.json"
+    path = root / SETTINGS
     path.parent.mkdir(exist_ok=True)
     settings = json.loads(path.read_text()) if path.exists() else {}
     added = merge_rules(settings)
@@ -67,21 +62,30 @@ def write_settings(root):
     return added
 
 
-def append_once(path, marker, text):
-    current = path.read_text() if path.exists() else ""
-    if marker in current:
-        return False
-    path.write_text(current.rstrip("\n") + ("\n" if current else "") + text.lstrip("\n"))
-    return True
+def exclude_file(root):
+    out = subprocess.run(
+        ["git", "rev-parse", "--git-path", "info/exclude"], cwd=root, capture_output=True, text=True, check=False
+    )
+    return (root / out.stdout.strip()) if out.returncode == 0 else None
+
+
+def write_excludes(root):
+    path = exclude_file(root)
+    if path is None:
+        return 0
+    path.parent.mkdir(parents=True, exist_ok=True)
+    current = path.read_text().splitlines() if path.exists() else []
+    missing = [line for line in EXCLUDES if line not in current]
+    if missing:
+        path.write_text("\n".join([*current, *missing]) + "\n")
+    return len(missing)
 
 
 def setup(root):
-    root = pathlib.Path(root)
+    root = pathlib.Path(root).resolve()
     added = write_settings(root)
-    (root / ".claude/agent-team.json").write_text(json.dumps({"version": VERSION}) + "\n")
-    claude = append_once(root / "CLAUDE.md", CLAUDE_HEADING, CLAUDE_SECTION)
-    ignore = append_once(root / ".gitignore", IGNORE_LINE, IGNORE_LINE + "\n")
-    return {"rules_added": added, "claude_md_updated": claude, "gitignore_updated": ignore}
+    (root / MARKER).write_text(json.dumps({"version": VERSION}) + "\n")
+    return {"rules_added": added, "excludes_added": write_excludes(root), "settings": SETTINGS, "marker": MARKER}
 
 
 if __name__ == "__main__":

@@ -3,7 +3,8 @@ name: builder
 description: Implements an approved /deliver spec in an isolated worktree, for code or documents. Commits on its own branch and reports each acceptance criterion with the command it ran.
 tools: Read, Grep, Glob, Bash, Write, Edit
 isolation: worktree
-maxTurns: 80
+model: sonnet
+maxTurns: 50
 ---
 
 The brief gives: the spec path, the branch name, and what not to touch. Read the spec from that absolute path.

@@ -103,6 +103,27 @@ class Evidence(InTempDir):
         self.assertEqual(json.loads(out)["failing"], ["AC1", "AC2"])
 
 
+class BudgetState(InTempDir):
+    def test_new_records_start_and_default_budget(self):
+        self.start()
+        state = self.state()
+        self.assertEqual(state["budget_usd"], run_state.DEFAULT_BUDGET_USD)
+        self.assertRegex(state["created_at"], r"^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.000Z$")
+
+    def test_custom_and_raised_budget(self):
+        self.assertEqual(call("new", "fee-fix", "x", "--budget-usd", "2")[0], 0)
+        self.assertEqual(self.state()["budget_usd"], 2.0)
+        self.assertEqual(call("budget", "fee-fix", "0")[0], 1)
+        self.assertEqual(call("budget", "fee-fix", "8")[0], 0)
+        self.assertEqual(self.state()["budget_usd"], 8.0)
+
+    def test_status_reports_spend(self):
+        self.start()
+        pathlib.Path(".agents/runs/fee-fix/spend.jsonl").write_text('{"main_usd": 0.4}\n{"agent": "a", "usd": 0.6}\n')
+        _, out, _ = call("status", "fee-fix")
+        self.assertEqual(json.loads(out)["spend_usd"], 1.0)
+
+
 class ReviewCap(InTempDir):
     def test_rounds_reset_evidence_and_block_after_cap(self):
         self.start()

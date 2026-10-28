@@ -1,17 +1,22 @@
 """Run state for /deliver: one folder per run, criteria with evidence, capped review rounds."""
 
 import argparse
+import datetime
 import json
 import pathlib
 import re
 import subprocess
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "hooks"))
+import cost  # noqa: E402
+
 RUNS = pathlib.Path(".agents/runs")
 ACTIVE = pathlib.Path(".agents/active-run")
 PHASES = ("spec", "approved", "build", "review", "release", "blocked", "done")
 OPEN_PHASES = ("build", "review")
 MAX_REVIEW_ROUNDS = 3
+DEFAULT_BUDGET_USD = 5.0
 CRITERION = re.compile(r"^- \[[ xX]\] (AC\d+):\s*(.+)$", re.M)
 SPEC_TEMPLATE = """# {goal}
 
@@ -61,7 +66,10 @@ def cmd_new(args):
         raise StateError(f"run '{args.slug}' exists")
     (folder / "research").mkdir(parents=True)
     (folder / "spec.md").write_text(SPEC_TEMPLATE.format(goal=args.goal))
-    save(args.slug, {"goal": args.goal, "phase": "spec", "review_rounds": 0, "criteria": []})
+    created = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    state = {"goal": args.goal, "phase": "spec", "review_rounds": 0, "criteria": []}
+    state.update(created_at=created, budget_usd=args.budget_usd)
+    save(args.slug, state)
     ACTIVE.write_text(args.slug + "\n")
     return str(folder.resolve())
 
@@ -151,10 +159,22 @@ def cmd_tree(args):
     return "tree unchanged"
 
 
+def cmd_budget(args):
+    if args.usd <= 0:
+        raise StateError("budget must be positive")
+    state = load(args.slug)
+    state["budget_usd"] = args.usd
+    save(args.slug, state)
+    return f"budget ${args.usd:.2f}"
+
+
 def cmd_status(args):
     slug = args.slug or active_slug()
     state = load(slug)
-    return json.dumps({"slug": slug, "phase": state["phase"], "failing": failing(state)})
+    spend = cost.run_total(run_dir(slug) / "spend.jsonl")
+    summary = {"slug": slug, "phase": state["phase"], "failing": failing(state)}
+    summary.update(spend_usd=spend, budget_usd=state.get("budget_usd"))
+    return json.dumps(summary)
 
 
 def parser():
@@ -163,6 +183,7 @@ def parser():
     new = sub.add_parser("new")
     new.add_argument("slug")
     new.add_argument("goal")
+    new.add_argument("--budget-usd", type=float, default=DEFAULT_BUDGET_USD)
     for name in ("criteria", "check", "review-round"):
         sub.add_parser(name).add_argument("slug")
     phase = sub.add_parser("phase")
@@ -176,6 +197,9 @@ def parser():
     tree.add_argument("slug")
     tree.add_argument("action", choices=("save", "verify"))
     tree.add_argument("path")
+    budget = sub.add_parser("budget")
+    budget.add_argument("slug")
+    budget.add_argument("usd", type=float)
     sub.add_parser("status").add_argument("slug", nargs="?")
     return p
 
@@ -188,6 +212,7 @@ COMMANDS = {
     "review-round": cmd_review_round,
     "check": cmd_check,
     "tree": cmd_tree,
+    "budget": cmd_budget,
     "status": cmd_status,
 }
 

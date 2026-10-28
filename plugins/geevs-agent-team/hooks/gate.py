@@ -1,4 +1,4 @@
-"""Hooks for projects that opted in via .claude/agent-team.json. Everything else passes through."""
+"""Hooks for project clones that opted in via .claude/agent-team.local.json. Everything else passes through."""
 
 import json
 import pathlib
@@ -6,7 +6,10 @@ import re
 import subprocess
 import sys
 
-MARKER = ".claude/agent-team.json"
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import cost  # noqa: E402
+
+MARKER = ".claude/agent-team.local.json"
 DEFAULT_BRANCHES = {"main", "master"}
 GIT_COMMIT = re.compile(r"\bgit\b[^;&|\n]*\bcommit\b")
 SECRET = [
@@ -34,6 +37,22 @@ def branch(cwd):
     except (OSError, subprocess.TimeoutExpired):
         return ""
     return out.stdout.strip()
+
+
+def active_run(root):
+    """Return (run folder, state) of the open run, or (None, None)."""
+    active = root / ".agents/active-run"
+    if not active.exists():
+        return None, None
+    folder = root / ".agents/runs" / active.read_text().strip()
+    if not (folder / "progress.json").exists():
+        return None, None
+    return folder, json.loads((folder / "progress.json").read_text())
+
+
+def append_spend(folder, entry):
+    with open(folder / "spend.jsonl", "a", encoding="utf-8") as log:
+        log.write(json.dumps(entry) + "\n")
 
 
 def decide(decision, reason):
@@ -65,14 +84,37 @@ def on_write(event, _root):
     return None
 
 
+def on_agent_start(event, root):
+    folder, state = active_run(root)
+    if state is None:
+        return None
+    main = round(cost.transcript_usd(event.get("transcript_path", ""), state.get("created_at", "")), 4)
+    append_spend(folder, {"main_usd": main})
+    total = cost.run_total(folder / "spend.jsonl")
+    budget = state.get("budget_usd")
+    if budget is not None and total >= budget:
+        reason = f"Run has spent about ${total:.2f} of its ${budget:.2f} budget. "
+        reason += "Approve to continue, or stop and raise the budget with run_state budget."
+        return decide("ask", reason)
+    return None
+
+
+def on_agent_done(event, root):
+    folder, state = active_run(root)
+    if state is None:
+        return None
+    response = event.get("tool_response")
+    response = response if isinstance(response, dict) else {}
+    usage, model = response.get("usage"), response.get("resolvedModel")
+    usd = round(cost.usage_usd(usage, model), 4) if usage else None
+    append_spend(folder, {"agent": event.get("tool_input", {}).get("subagent_type"), "model": model, "usd": usd})
+    return None
+
+
 def on_stop(_event, root):
-    active = root / ".agents/active-run"
-    if not active.exists():
+    _, state = active_run(root)
+    if state is None:
         return None
-    progress = root / ".agents/runs" / active.read_text().strip() / "progress.json"
-    if not progress.exists():
-        return None
-    state = json.loads(progress.read_text())
     open_ids = [c["id"] for c in state.get("criteria", []) if not c.get("passes")]
     if state.get("phase") in OPEN_PHASES and open_ids:
         reason = f"Run is in {state['phase']} with unverified criteria: {', '.join(open_ids)}. "
@@ -81,16 +123,19 @@ def on_stop(_event, root):
     return None
 
 
-HANDLERS = {"Bash": on_bash, "Write": on_write, "Edit": on_write, "MultiEdit": on_write}
+PRE = {"Bash": on_bash, "Write": on_write, "Edit": on_write, "MultiEdit": on_write, "Agent": on_agent_start}
+POST = {"Agent": on_agent_done}
 
 
 def handle(event):
     root = project_root(event.get("cwd", "."))
     if root is None:
         return None
-    if event.get("hook_event_name") == "Stop":
+    kind = event.get("hook_event_name")
+    if kind == "Stop":
         return on_stop(event, root)
-    handler = HANDLERS.get(event.get("tool_name", ""))
+    table = POST if kind == "PostToolUse" else PRE
+    handler = table.get(event.get("tool_name", ""))
     return handler(event, root) if handler else None
 
 
