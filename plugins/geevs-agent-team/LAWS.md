@@ -60,8 +60,8 @@ Autonomy level lives in the project `CLAUDE.md`. Only the owner raises it. Anyon
 Thrashing is a defect. An agent that notices it is repeating itself stops and reports.
 
 ## 6. Bugs, defects, issues
-Severity set at intake by the orchestrator, confirmed by the human for S1:
-- **S1** data loss, security exposure, client-facing broken, money wrong → stop all runs touching the area, notify human, no change without approval.
+Severity set at triage by the orchestrator, confirmed by the human for S1. If production use is unknown, treat it as production:
+- **S1** in production or client-facing use: data loss, security exposure, client-facing broken, money wrong → stop all runs touching the area, raise it to the human through the orchestrator (LAWS 4), no change without approval. Read-only stages (reproduce) may run meanwhile. The same defects in a sandbox, test or unreleased project are S2.
 - **S2** core function broken, no workaround → `/fix-issue`, human informed at start.
 - **S3** degraded, workaround exists → `/fix-issue` in normal queue.
 - **S4** cosmetic, nit → batch into the next related run.

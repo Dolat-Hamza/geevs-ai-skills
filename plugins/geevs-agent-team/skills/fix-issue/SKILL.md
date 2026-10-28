@@ -20,8 +20,8 @@ If `.agents/LAWS.md` is missing, run `/agent-team-setup` first.
 | 6 | Release | human per autonomy level | `06-release.md` | approval recorded, rollback noted |
 
 ## Procedure
-1. `.agents/runs/fix-<slug>/`, copy templates from this skill.
-2. S1: stop every run touching the area, notify the human, wait for approval before stage 3.
+1. Create `.agents/runs/fix-<slug>/` and copy this skill's `templates/` into it. Use its `00-status.md`, which lists the six fix stages.
+2. S1: stop every run touching the area, write it under "Decisions needed" in `00-status.md` for the human, and wait for approval before stage 3. Stage 2 is read-only and may run meanwhile.
 3. Stage 2 before stage 3, always. A fix without a reproduction is refused.
 4. Stage 4: systematic debugging. Form one hypothesis, test it, record it. Max 2 fix attempts (LAWS 5 and 6). After the second failure write `findings.md` and hand to the human.
 5. Defects found outside scope go to `00-status.md`, not into this fix.
