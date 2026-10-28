@@ -20,7 +20,7 @@ claude plugin install geevs-agent-team@geevs
 
 Then, in each project clone, open Claude Code in that folder and run `/geevs-agent-team:setup`. It writes `.claude/settings.local.json` and `.claude/agent-team.local.json`, excluded from git through `.git/info/exclude`, so they apply on every branch without a commit. Nothing is enforced in clones that have not run it.
 
-Requires Claude Code 2.1.293 or later for `model: haiku` on Haiku 5.5 and 2.1.271 or later for `omitClaudeMd`; older versions ignore unknown fields. Verified on 2.1.267: builder and reviewer ran on Sonnet as configured.
+Verified on Claude Code 2.1.267: researcher ran on `claude-haiku-5-5`, builder and reviewer on `claude-sonnet-5-5`. The docs list 2.1.271 or later for `omitClaudeMd`; older versions ignore it.
 
 ## What is enforced and how
 
