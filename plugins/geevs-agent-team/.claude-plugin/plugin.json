@@ -1,7 +1,7 @@
 {
   "name": "geevs-agent-team",
   "description": "Geevs agent team: orchestrator, product/research, designer, developer, producer, QA, reviewer and specialist agents (architecture, security, performance, compliance, domain) plus the /deliver 8-stage pipeline, /fix-issue bug pipeline, /agent-team-setup scaffolding, LAWS.md and QUALITY.md governing precedence, question budgets, loop limits and issue handling, code quality and compliance, with hooks enforcing the hard rules. Works for code and non-code deliverables.",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "author": {
     "name": "Geevs"
   },

@@ -5,6 +5,8 @@ description: Handle a bug, defect or issue end to end under the team laws: triag
 
 # fix-issue
 
+Plugin version: 0.2.2. State it at the top of every report.
+
 Shorter pipeline than `/deliver`, same gates and laws. Read `.agents/LAWS.md` section 6 first.
 
 If `.agents/LAWS.md` is missing, run `/agent-team-setup` first.
@@ -26,3 +28,6 @@ If `.agents/LAWS.md` is missing, run `/agent-team-setup` first.
 4. Stage 4: systematic debugging. Form one hypothesis, test it, record it. Max 2 fix attempts (LAWS 5 and 6). After the second failure write `findings.md` and hand to the human.
 5. Defects found outside scope go to `00-status.md`, not into this fix. After any loop that changes the fix, both QA and reviewer re-check it.
 6. On release, append to `.agents/pilot-log.md`: cause, fix, test added, time to resolve.
+
+## Handoffs
+Every handoff names the run folder by absolute path. Agents in a worktree read inputs and write artifacts there, because untracked run files are not copied into worktrees. Create worktrees under `.agents/worktrees/`.

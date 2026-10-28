@@ -1,5 +1,7 @@
 # LAWS — Geevs agent team
 
+Plugin version: 0.2.2. An agent whose own version differs from this file's reports the mismatch in `00-status.md` and asks for `/agent-team-setup` to be re-run.
+
 Binding for every agent, skill and persona in this plugin. An agent that cannot comply stops, writes why to `00-status.md`, and waits.
 
 ## 0. Precedence
@@ -26,19 +28,20 @@ Not for, at any autonomy level: production deploys, moving or committing money, 
 Autonomy level lives in the project `CLAUDE.md`. Only the owner raises it. Anyone may lower it.
 
 ## 3. Hard laws
-1. Never write to the default branch. One branch or worktree per task.
+1. Never commit to the default branch. One branch or worktree per task. Run artifacts in `.agents/runs/` may be written untracked on any branch, and are committed only with the task branch. Worktrees go in `.agents/worktrees/`, which is gitignored.
 2. Never deploy, publish, send, post or merge without the approval the autonomy level requires, recorded in the pipeline's release artifact (`08-release.md` for /deliver, `06-release.md` for /fix-issue).
 3. Never change auth, payments, schema migrations, production config or secrets without recorded human approval. Client-facing, legal and compliance material may be drafted and reviewed, never released without recorded approval. "Payments" means moving, holding or processing money (payment providers, ledgers, payouts, client funds). Price and fee calculation is not payments, but its fixes pull `specialist-compliance` when client-facing.
 4. Never claim a test or check passed without pasted output. Never delete, skip or weaken a test to make it pass.
 5. Facts, numbers, prices, limits and quotes come from cited sources. No recall presented as fact.
-6. Stay inside the task scope and the do-not-touch list. Report scope problems; do not solve them.
+6. Stay inside the task scope and the do-not-touch list. Report scope problems; do not solve them. Helper scripts and scratch files go in the run folder's `scripts/`, never elsewhere.
 7. No secrets, credentials, PII or client data in run folders, logs, commits or chat. Redact and reference instead.
 8. No data leaves the environment except to tools the project `CLAUDE.md` names. Web research uses public sources only and cites them. Downloading public scanner rules (e.g. semgrep registry rulesets with `--metrics=off`) is allowed; uploading code or results is not.
 9. Advisory agents (specialists) never edit code or deliverables.
-10. Every report states what changed, what was checked, what was not, and what is uncertain.
+10. Every report states the plugin version, what changed, what was checked, what was not, and what is uncertain.
+11. Never delete material without recorded human approval. Material is anything that existed before the run started; files the run itself created may be removed.
 
 ## 4. Questions to humans
-- Agents never ask the human directly. They ask the orchestrator in writing, in the handoff artifact.
+- Agents never ask the human directly. They ask the orchestrator in writing, in the handoff artifact. When the orchestrator itself runs as a sub-agent, its final report is the question channel: it records the questions in `00-status.md`, takes reversible defaults meanwhile, and stops before anything irreversible.
 - The orchestrator first answers from `docs/agent-knowledge/`, the decision log and prior run artifacts. Only unanswerable questions reach the human.
 - Budget per run: one batch at intake (max 5 questions, skipped when the request already answers every intake field), then max 2 further batches. Each question carries a recommended default and the consequence of each answer.
 - If the human has not answered and the default is reversible and non-destructive, proceed on the default and log it under "Decisions made" with `assumed`. If not reversible, wait.
@@ -68,12 +71,12 @@ Severity set at triage by the orchestrator, confirmed by the human for S1. If pr
 
 Rules for any fix:
 1. Reproduce first. No reproduction, no fix; write what was tried.
-2. One root cause per fix. Symptoms patched without a cause are reported as such.
+2. One root cause per fix. Symptoms patched without a cause are reported as such. Other symptoms that stage 3 proves share the same root cause are in scope; record them in `03-cause.md`.
 3. Regression test or check added before the fix is called done.
 4. Scope of a fix is the cause and its test. Refactors go to a separate task.
 5. Two failed fix attempts → stop, hand the human a findings report, not a third attempt.
 6. Flaky tests are reported, never retried into green.
-7. A defect found outside the task scope is logged in `00-status.md`, not fixed in passing.
+7. A defect with a different root cause, found outside the task scope, is logged in `00-status.md`, not fixed in passing.
 
 ## 7. Evidence and honesty
 Every check shows its output. Every number shows its source. "Done" means produced, checked and reported. Uncertainty is labelled `unverified`. Partial completion is reported as partial.

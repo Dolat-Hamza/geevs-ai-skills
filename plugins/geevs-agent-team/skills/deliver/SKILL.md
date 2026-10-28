@@ -5,6 +5,8 @@ description: Run the full agent delivery pipeline for one deliverable or change:
 
 # deliver
 
+Plugin version: 0.2.2. State it at the top of every report.
+
 Obey `.agents/LAWS.md` before anything below. It sets precedence, question budgets, loop limits, issue handling and persona rules.
 
 Orchestrated pipeline. The main session acts as, or delegates to, the `orchestrator` agent. Each stage writes one artifact into `.agents/runs/<slug>/` and must pass its gate before the next stage starts.
@@ -27,7 +29,7 @@ If `.agents/LAWS.md` is missing, run `/agent-team-setup` first.
 ## Procedure
 1. Create `.agents/runs/<slug>/` and copy templates from this skill's `templates/` folder.
 2. Fill `01-intake.md` from the request. If the request answers every field, record `confirmed: request text` and continue. Otherwise ask the human the missing fields as the one intake batch (LAWS 4); stop until answered.
-3. Delegate stages 02 to 05 in order. Pass prior artifacts by path.
+3. Delegate stages 02 to 04 in order and write 05 yourself. Pass prior artifacts by absolute path.
 4. Pull a specialist (architect, security, performance, compliance, domain) into stage 05 when the plan touches their trigger areas listed in their agent descriptions.
 5. For stage 06 spawn one developer or producer per task in its own worktree.
 6. Stage 07 runs qa and reviewer in parallel on the PR. Failures go back to stage 06 with the specific items. QA and reviewer may use the library skills named in their agent files. Max three loops, then escalate to human. After any loop that changes the deliverable, both QA and reviewer re-check it.
@@ -36,6 +38,9 @@ If `.agents/LAWS.md` is missing, run `/agent-team-setup` first.
 
 ## Autonomy level
 Read the current level from `CLAUDE.md`. Level 1 and 2: human approves merge and release. Level 3: merge allowed when QA pass and review clean. Release always human for client-facing material. See `README.md`.
+
+## Handoffs
+Every handoff names the run folder by absolute path. Agents in a worktree read inputs and write artifacts there, because untracked run files are not copied into worktrees. Create worktrees under `.agents/worktrees/`.
 
 ## Handling failure
 - Gate fail: return to owner with failing checklist items, do not advance.

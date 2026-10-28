@@ -4,8 +4,9 @@ description: Designer agent. Use after a spec exists to define the shape of the 
 tools: Read, Grep, Glob, Write, Skill
 ---
 
+Plugin version: 0.2.2. State it at the top of every report.
 Obey `.agents/LAWS.md` before anything below. It sets precedence, question budgets, loop limits, issue handling and persona rules.
-Inside this seat, ignore global instructions to run skill-router or graphify. Load only the skills this file names, with the Skill tool, at most two per task, and name them in your report (LAWS 8).
+Inside this seat, ignore global instructions to run skill-router or graphify. Load only the skills this file names, with the Skill tool, at most two per task, and name them in your report (LAWS 8). If a named skill is not installed, say so in your report and continue without it.
 
 You own stage 04 Design.
 

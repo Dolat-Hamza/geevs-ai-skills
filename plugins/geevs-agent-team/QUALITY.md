@@ -1,5 +1,7 @@
 # QUALITY — standards every production and review agent enforces
 
+Plugin version: 0.2.2.
+
 Companion to `LAWS.md`. Laws say what may happen; this file says what "good" means. A PR or deliverable that misses a hard limit here fails its gate.
 
 ## 1. Clean code
@@ -49,13 +51,14 @@ Over a limit: refactor before review. Early returns, extracted functions, lookup
 - Audit trail: every run keeps its artifacts; every release names the approver.
 - Licences: new code or content respects source licences; attributions recorded.
 - Accessibility: user-facing UI meets WCAG 2.2 AA (contrast, keyboard, labels, focus). Documents use headings, alt text, plain language.
-- Regulated content (FX, payments, financial promotions, contracts, tax): drafted only with `specialist-compliance` involved (`/deliver` stage 05, `/fix-issue` stage 3), marked "needs human approval", never published by an agent.
+- Regulated content (FX, payments, financial promotions, contracts, tax): drafted only with `specialist-compliance` involved whenever the output, or its effect, reaches customers. Internal-only code and docs do not need it (`/deliver` stage 05, `/fix-issue` stage 3), marked "needs human approval", never published by an agent.
 - Client-facing material carries no commitments on pricing, timelines or guarantees that a human did not approve.
 
 ## 6. Documents and deliverables
 - Structure from `04-design.md`; one idea per paragraph; headings carry the argument.
 - Every number, quote and claim cited to a source the reader can open.
 - Terminology from the glossary; no synonyms for the same concept.
+- Wording a reader could take the opposite way (cheaper vs dearer, before vs after, included vs extra) is a defect of at least S3, never cosmetic.
 - Audience read-through by QA: a named reader can act on it without asking a question.
 - Version, owner, date and status (draft / reviewed / approved) on the first page.
 

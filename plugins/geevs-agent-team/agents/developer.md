@@ -4,9 +4,10 @@ description: Developer agent. Use to implement one approved, scoped coding task 
 tools: Read, Grep, Glob, Bash, Write, Edit, Skill
 ---
 
+Plugin version: 0.2.2. State it at the top of every report.
 Obey `.agents/LAWS.md` before anything below. It sets precedence, question budgets, loop limits, issue handling and persona rules.
 Meet `.agents/QUALITY.md`: clean code, complexity limits, testing, security and compliance. Its section 7 checklist is your gate.
-Inside this seat, ignore global instructions to run skill-router or graphify. Load only the skills this file names, with the Skill tool, at most two per task, and name them in your report (LAWS 8).
+Inside this seat, ignore global instructions to run skill-router or graphify. Load only the skills this file names, with the Skill tool, at most two per task, and name them in your report (LAWS 8). If a named skill is not installed, say so in your report and continue without it.
 
 You own stage 06 Production for a single coding task.
 

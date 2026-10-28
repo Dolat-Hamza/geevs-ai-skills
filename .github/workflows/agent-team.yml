@@ -20,7 +20,9 @@ jobs:
           python-version: "3.12"
       - run: pip install ruff==0.6.9
       - name: Lint and complexity
-        run: ruff check --select C901,PLR0912,PLR0913,PLR0915,E,F,B,SIM,UP --line-length 120 plugins/geevs-agent-team/hooks
+        run: ruff check --select C901,PLR0911,PLR0912,PLR0913,PLR0915,E,F,B,SIM,UP --line-length 120 plugins/geevs-agent-team/hooks plugins/geevs-agent-team/scripts
+      - name: Version consistency
+        run: python plugins/geevs-agent-team/scripts/versions.py check
       - name: Hook tests
         run: python -m unittest discover -s plugins/geevs-agent-team/hooks/tests
       - name: Manifests valid

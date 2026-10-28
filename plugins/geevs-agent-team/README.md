@@ -9,7 +9,15 @@ claude plugin marketplace add Dolat-Hamza/geevs-ai-skills
 ```bash
 claude plugin install geevs-agent-team@geevs
 ```
-Restart Claude Code after installing or updating; a running session keeps the old version. Then in each project run `/agent-team-setup`, fill the `TODO:` items it reports, and commit. Re-run `/agent-team-setup` after every plugin update so `.agents/LAWS.md` and `.agents/QUALITY.md` match the installed version.
+Install from GitHub, never from a local checkout: a local-folder marketplace serves hooks from the live working copy, so switching branches silently changes the guard.
+
+Restart Claude Code after installing or updating; a running session keeps the agent and skill versions it started with. Every agent states its plugin version at the top of its report, and flags a mismatch with `.agents/LAWS.md`.
+
+The skills each agent names come from the other Geevs bundles. Install them too, or agents will report the missing skill and work without it:
+
+```bash
+for p in engineering-skills engineering-advanced-skills product-skills business-growth-skills finance-skills; do claude plugin install "$p@geevs"; done
+``` Then in each project run `/agent-team-setup`, fill the `TODO:` items it reports, and commit. Re-run `/agent-team-setup` after every plugin update so `.agents/LAWS.md` and `.agents/QUALITY.md` match the installed version.
 
 ## Agents
 | Agent | Role | Output |
