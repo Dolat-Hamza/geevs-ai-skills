@@ -16,7 +16,7 @@ If `.agents/LAWS.md` is missing, run `/agent-team-setup` first.
 | 2 | Reproduce | qa | `02-repro.md` | exact steps, expected vs actual, pasted evidence. No repro → stop and report |
 | 3 | Isolate | developer or producer (+ specialist if security, performance, data) | `03-cause.md` | one root cause named, evidence, alternatives ruled out |
 | 4 | Fix | same agent, own branch | `04-fix.md` + PR | regression test added first and failing, then passing; pasted output; scope = cause + test |
-| 5 | Verify | qa ∥ reviewer | `05-qa.md`, `05-review.md` | repro no longer reproduces; no blockers; adjacent regression suite green |
+| 5 | Verify | qa ∥ reviewer | `05-qa.md`, `05-review.md` | repro no longer reproduces; adjacent regression suite green; QA pass, or pass with minor defects when every defect is S4 and logged; review has no blockers |
 | 6 | Release | human per autonomy level | `06-release.md` | approval recorded, rollback noted |
 
 ## Procedure
@@ -24,5 +24,5 @@ If `.agents/LAWS.md` is missing, run `/agent-team-setup` first.
 2. S1: stop every run touching the area, write it under "Decisions needed" in `00-status.md` for the human, and wait for approval before stage 3. Stage 2 is read-only and may run meanwhile.
 3. Stage 2 before stage 3, always. A fix without a reproduction is refused.
 4. Stage 4: systematic debugging. Form one hypothesis, test it, record it. Max 2 fix attempts (LAWS 5 and 6). After the second failure write `findings.md` and hand to the human.
-5. Defects found outside scope go to `00-status.md`, not into this fix.
+5. Defects found outside scope go to `00-status.md`, not into this fix. After any loop that changes the fix, both QA and reviewer re-check it.
 6. On release, append to `.agents/pilot-log.md`: cause, fix, test added, time to resolve.

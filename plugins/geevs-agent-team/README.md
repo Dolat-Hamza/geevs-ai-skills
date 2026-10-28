@@ -3,9 +3,13 @@
 Multi-agent delivery structure for Claude Code. Twelve agents, one pipeline, one setup command. Works for software and for document or process deliverables.
 
 ## Install
-Claude Code: `claude plugin install geevs-agent-team` from the Geevs marketplace, or for one session `claude --plugin-dir plugins/geevs-agent-team`.
-
-Then in each project: `/agent-team-setup`, fill the TODOs it reports, commit.
+```bash
+claude plugin marketplace add Dolat-Hamza/geevs-ai-skills
+```
+```bash
+claude plugin install geevs-agent-team@geevs
+```
+Restart Claude Code after installing or updating; a running session keeps the old version. Then in each project run `/agent-team-setup`, fill the `TODO:` items it reports, and commit. Re-run `/agent-team-setup` after every plugin update so `.agents/LAWS.md` and `.agents/QUALITY.md` match the installed version.
 
 ## Agents
 | Agent | Role | Output |
@@ -34,13 +38,13 @@ The same structure runs documents, processes, research and analysis. `producer` 
 ## Quality and enforcement
 `QUALITY.md` is the definition of good: clean code rules, hard complexity limits (cognitive 15, cyclomatic 10, 30-line functions, nesting 3, 4 params), testing, OWASP security, secrets and dependency scans, compliance (data classification, personal data, licences, WCAG 2.2 AA, regulated content), and the reviewer's gate checklist. `/agent-team-setup` installs matching ESLint or ruff limits.
 
-Hooks in `hooks/` make the hard laws mechanical. They block force pushes, pushes or commits to main or master, hard resets, production deploys, infrastructure applies, package publishes, PR merges, recursive deletes of root or home, writing `.env` or key files, and content that looks like a credential. A blocked call returns the law number to the agent. Tests: `python3 -m unittest discover -s plugins/geevs-agent-team/hooks/tests`.
+Hooks in `hooks/` make the hard laws mechanical. They parse each shell command segment by segment, follow `cd` and `git -C`, and ignore quoted text and heredoc bodies. They block force pushes, pushes or commits to main or master, hard resets, production deploys, infrastructure applies, package publishes, PR merges, recursive deletes of root or home, writing `.env` or key files through Write, Edit or shell redirects and `tee`, and content that looks like a credential. Commands the guard cannot parse are blocked with a request to simplify. Not yet verified: whether hooks fire on tool calls made inside subagents. A blocked call returns the law number to the agent. Tests: `python3 -m unittest discover -s plugins/geevs-agent-team/hooks/tests`.
 
 ## Bugs and issues: `/fix-issue <issue>`
 Triage → reproduce → isolate one root cause → fix with a regression test on its own branch → independent QA and review → human release. No reproduction, no fix. Two failed attempts produce a findings report for a human, not a third attempt.
 
 ## Personas versus agents
-An **agent** is a seat: a stage in the pipeline, a tool list, permissions. A **persona** is a library skill carrying expertise (senior-architect, product-strategist, financial-analyst, the bencium UX designers, management-consulting). The orchestrator assigns the seat; the agent loads at most two personas for the task and names them in its report. Personas change how the work is done, never what the seat may do. Conflicts with the laws or the spec are dropped and noted. The orchestrator itself stays neutral.
+An **agent** is a seat: a stage in the pipeline, a tool list, permissions. Every seat has the Skill tool and loads only the skills its file names; global skill-router and graphify instructions do not apply inside a seat. A **persona** is a library skill carrying expertise (senior-architect, product-strategist, financial-analyst, the bencium UX designers, management-consulting). The orchestrator assigns the seat; the agent loads at most two personas for the task and names them in its report. Personas change how the work is done, never what the seat may do. Conflicts with the laws or the spec are dropped and noted. The orchestrator itself stays neutral.
 
 ## Pipeline: `/deliver <goal>`
 01 Intake → 02 Research → 03 Spec → 04 Design → 05 Plan → 06 Production → 07 Verification (QA + review in parallel) → 08 Release. Each stage writes one artifact in `.agents/runs/<slug>/` and must pass its gate. Release is human at autonomy levels 1 and 2.

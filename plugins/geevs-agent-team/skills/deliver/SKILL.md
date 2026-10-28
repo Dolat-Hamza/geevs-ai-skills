@@ -21,7 +21,7 @@ If `.agents/LAWS.md` is missing, run `/agent-team-setup` first.
 | 04 | Design | designer | `04-design.md` | Outline, format, tone, reader journey set; reuses existing templates |
 | 05 | Plan | orchestrator (+ specialists) | `05-plan.md` | Each task has problem, criteria, scope, do-not-touch, checks, dependencies, size under one day |
 | 06 | Production | developer (code) or producer (deliverables), one per task, parallel where independent | `06-dev-<task>.md` or `06-prod-<task>.md` + PR | Self-check evidence per criterion; report lists unchecked areas |
-| 07 | Verification | qa and reviewer, independently and in parallel | `07-qa.md`, `07-review.md` | QA verdict pass; review has no blockers |
+| 07 | Verification | qa and reviewer, independently and in parallel | `07-qa.md`, `07-review.md` | QA verdict pass, or pass with minor defects when every defect is S4 and logged; review has no blockers |
 | 08 | Release | human or authorized policy | `08-release.md` | Human approval recorded; owner, channel, correction path noted |
 
 ## Procedure
@@ -30,7 +30,7 @@ If `.agents/LAWS.md` is missing, run `/agent-team-setup` first.
 3. Delegate stages 02 to 05 in order. Pass prior artifacts by path.
 4. Pull a specialist (architect, security, performance, compliance, domain) into stage 05 when the plan touches their trigger areas listed in their agent descriptions.
 5. For stage 06 spawn one developer or producer per task in its own worktree.
-6. Stage 07 runs qa and reviewer in parallel on the PR. Failures go back to stage 06 with the specific items. QA and reviewer may use the library skills named in their agent files. Max three loops, then escalate to human.
+6. Stage 07 runs qa and reviewer in parallel on the PR. Failures go back to stage 06 with the specific items. QA and reviewer may use the library skills named in their agent files. Max three loops, then escalate to human. After any loop that changes the deliverable, both QA and reviewer re-check it.
 7. Stage 08: present the human a release summary. Never publish, send or merge to the default branch without recorded approval, unless `CLAUDE.md` autonomy level permits it.
 8. Update `00-status.md` after every stage change.
 

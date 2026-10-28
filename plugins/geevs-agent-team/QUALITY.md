@@ -39,9 +39,9 @@ Over a limit: refactor before review. Early returns, extracted functions, lookup
 - Authorization checked server-side on every data access the change touches.
 - Secrets only from the environment or a secret manager. Never in code, config, logs, run artifacts or chat.
 - Dependencies audited: `npm audit` / `pip-audit` / `cargo audit` clean of high and critical, or each exception justified.
-- Static scan: semgrep (or the project's SAST) clean on changed files. Secrets scan (gitleaks or equivalent) clean on the diff.
+- Static scan: semgrep (or the project's SAST) clean on changed files. Use a pinned ruleset offline-safe: `semgrep scan --config p/<language> --metrics=off <files>`; `--config auto` does not work with metrics off. Secrets scan (gitleaks or equivalent) clean on the diff.
 - Logging carries no PII, tokens or card data. Errors shown to users carry no stack traces.
-- Anything touching auth, payments, PII, uploads, external calls or infrastructure pulls `specialist-security` at plan time (LAWS 3.3).
+- Anything touching auth, payments, PII, uploads, external calls or infrastructure pulls `specialist-security` at plan time (`/deliver` stage 05) or isolate time (`/fix-issue` stage 3), per LAWS 3.3.
 
 ## 5. Compliance
 - Data classification named in the spec: public, internal, confidential, client, personal. Handling follows `docs/agent-knowledge/engineering-rules-and-standards.md`.
@@ -49,7 +49,7 @@ Over a limit: refactor before review. Early returns, extracted functions, lookup
 - Audit trail: every run keeps its artifacts; every release names the approver.
 - Licences: new code or content respects source licences; attributions recorded.
 - Accessibility: user-facing UI meets WCAG 2.2 AA (contrast, keyboard, labels, focus). Documents use headings, alt text, plain language.
-- Regulated content (FX, payments, financial promotions, contracts, tax): drafted only with `specialist-compliance` involved, marked "needs human approval", never published by an agent.
+- Regulated content (FX, payments, financial promotions, contracts, tax): drafted only with `specialist-compliance` involved (`/deliver` stage 05, `/fix-issue` stage 3), marked "needs human approval", never published by an agent.
 - Client-facing material carries no commitments on pricing, timelines or guarantees that a human did not approve.
 
 ## 6. Documents and deliverables
@@ -60,7 +60,7 @@ Over a limit: refactor before review. Early returns, extracted functions, lookup
 - Version, owner, date and status (draft / reviewed / approved) on the first page.
 
 ## 7. Gate checklist (reviewer fails the PR if any box is empty)
-- [ ] Lint, typecheck, tests green with pasted output
+- [ ] Lint, every installed type checker, tests green with pasted output (documents: N/A with reason)
 - [ ] Complexity report within limits or justified
 - [ ] Security scan and secrets scan clean on the diff
 - [ ] Dependency audit clean or exceptions justified

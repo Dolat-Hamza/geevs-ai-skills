@@ -27,13 +27,13 @@ Autonomy level lives in the project `CLAUDE.md`. Only the owner raises it. Anyon
 
 ## 3. Hard laws
 1. Never write to the default branch. One branch or worktree per task.
-2. Never deploy, publish, send, post or merge without the approval the autonomy level requires, recorded in `08-release.md`.
-3. Never touch auth, payments, schema migrations, production config, secrets, client-facing, legal or compliance material without recorded human approval.
+2. Never deploy, publish, send, post or merge without the approval the autonomy level requires, recorded in the pipeline's release artifact (`08-release.md` for /deliver, `06-release.md` for /fix-issue).
+3. Never change auth, payments, schema migrations, production config or secrets without recorded human approval. Client-facing, legal and compliance material may be drafted and reviewed, never released without recorded approval. "Payments" means moving, holding or processing money (payment providers, ledgers, payouts, client funds). Price and fee calculation is not payments, but its fixes pull `specialist-compliance` when client-facing.
 4. Never claim a test or check passed without pasted output. Never delete, skip or weaken a test to make it pass.
 5. Facts, numbers, prices, limits and quotes come from cited sources. No recall presented as fact.
 6. Stay inside the task scope and the do-not-touch list. Report scope problems; do not solve them.
 7. No secrets, credentials, PII or client data in run folders, logs, commits or chat. Redact and reference instead.
-8. No data leaves the environment except to tools the project `CLAUDE.md` names. Web research uses public sources only and cites them.
+8. No data leaves the environment except to tools the project `CLAUDE.md` names. Web research uses public sources only and cites them. Downloading public scanner rules (e.g. semgrep registry rulesets with `--metrics=off`) is allowed; uploading code or results is not.
 9. Advisory agents (specialists) never edit code or deliverables.
 10. Every report states what changed, what was checked, what was not, and what is uncertain.
 
@@ -42,7 +42,7 @@ Autonomy level lives in the project `CLAUDE.md`. Only the owner raises it. Anyon
 - The orchestrator first answers from `docs/agent-knowledge/`, the decision log and prior run artifacts. Only unanswerable questions reach the human.
 - Budget per run: one batch at intake (max 5 questions, skipped when the request already answers every intake field), then max 2 further batches. Each question carries a recommended default and the consequence of each answer.
 - If the human has not answered and the default is reversible and non-destructive, proceed on the default and log it under "Decisions made" with `assumed`. If not reversible, wait.
-- The same question is never asked twice in a run or across runs. Every answer is written to `docs/agent-knowledge/decision-log.md`.
+- The same question is never asked twice in a run or across runs. Every answer, and every default taken without an answer (marked `assumed`), is written to `docs/agent-knowledge/decision-log.md` as well as `00-status.md`.
 - Agent-to-agent: one clarification round per handoff. A second round means the upstream artifact failed its gate; the orchestrator sends it back instead.
 
 ## 5. Loop and budget limits
@@ -52,7 +52,7 @@ Autonomy level lives in the project `CLAUDE.md`. Only the owner raises it. Anyon
 | Gate fail → rework same stage | 2 | escalate |
 | Failed command or tool call retried | 2, with a change each time | report the error verbatim, stop that path |
 | Same fix attempted for same defect | 1 | stop, write findings, hand to human |
-| Delegation depth | 2 (orchestrator → agent → specialist) | no deeper; no agent spawns an orchestrator |
+| Delegation depth | 2 (orchestrator → agent → specialist) | no deeper; only the main session may spawn an orchestrator, never a subagent |
 | Parallel agents per run | 4 | queue the rest |
 | Run wall-clock | 3× the estimate in `05-plan.md` | pause, report, wait |
 | Reading the same file | 3 times per agent | summarise it into the artifact instead |
@@ -61,7 +61,7 @@ Thrashing is a defect. An agent that notices it is repeating itself stops and re
 
 ## 6. Bugs, defects, issues
 Severity set at triage by the orchestrator, confirmed by the human for S1. If production use is unknown, treat it as production:
-- **S1** in production or client-facing use: data loss, security exposure, client-facing broken, money wrong → stop all runs touching the area, raise it to the human through the orchestrator (LAWS 4), no change without approval. Read-only stages (reproduce) may run meanwhile. The same defects in a sandbox, test or unreleased project are S2.
+- **S1** in production or client-facing use: data loss, security exposure, client-facing broken, money wrong → stop all runs touching the area (the files, modules or materials named in triage), raise it to the human through the orchestrator (LAWS 4), no change without approval. Read-only stages (reproduce) may run meanwhile. The same defects in a sandbox, test or unreleased project are S2.
 - **S2** core function broken, no workaround → `/fix-issue`, human informed at start.
 - **S3** degraded, workaround exists → `/fix-issue` in normal queue.
 - **S4** cosmetic, nit → batch into the next related run.
