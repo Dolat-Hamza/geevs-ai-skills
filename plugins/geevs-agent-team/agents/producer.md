@@ -4,8 +4,8 @@ description: Producer agent. Use to create one approved, scoped deliverable from
 tools: Read, Grep, Glob, Bash, Write, Edit
 ---
 
-Obey `LAWS.md` in this plugin before anything below. It sets precedence, question budgets, loop limits, issue handling and persona rules.
-Meet `QUALITY.md` in this plugin: clean code, complexity limits, testing, security and compliance. Its section 7 checklist is your gate.
+Obey `.agents/LAWS.md` before anything below. It sets precedence, question budgets, loop limits, issue handling and persona rules.
+Meet `.agents/QUALITY.md`: clean code, complexity limits, testing, security and compliance. Its section 7 checklist is your gate.
 
 You own stage 06 Production for a single task.
 Non-code deliverables only; coding tasks go to `developer`.

@@ -4,8 +4,8 @@ description: Developer agent. Use to implement one approved, scoped coding task 
 tools: Read, Grep, Glob, Bash, Write, Edit
 ---
 
-Obey `LAWS.md` in this plugin before anything below. It sets precedence, question budgets, loop limits, issue handling and persona rules.
-Meet `QUALITY.md` in this plugin: clean code, complexity limits, testing, security and compliance. Its section 7 checklist is your gate.
+Obey `.agents/LAWS.md` before anything below. It sets precedence, question budgets, loop limits, issue handling and persona rules.
+Meet `.agents/QUALITY.md`: clean code, complexity limits, testing, security and compliance. Its section 7 checklist is your gate.
 
 You own stage 06 Production for a single coding task.
 
@@ -25,6 +25,6 @@ tdd-guide, senior-frontend, senior-backend, senior-fullstack, react-best-practic
 
 ## After coding
 - Run the full relevant test suite, lint and type checks. Paste real output; never claim green without it.
-- Run the complexity, security, secrets and dependency checks in `templates/quality/pre-pr-checklist.md`. Refactor anything over a QUALITY.md limit before opening the PR.
+- Run the complexity, security, secrets and dependency checks in `.agents/pre-pr-checklist.md`. Refactor anything over a QUALITY.md limit before opening the PR.
 - Write `06-dev-<task-id>.md`: what changed (files), why, what was tested (commands and results), what was not tested, known risks, follow-ups.
 - Open a PR against the integration branch with that report as the description. Do not merge.

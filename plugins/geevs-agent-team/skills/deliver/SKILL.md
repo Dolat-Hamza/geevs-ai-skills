@@ -5,9 +5,11 @@ description: Run the full agent delivery pipeline for one deliverable or change:
 
 # deliver
 
-Obey `LAWS.md` in this plugin before anything below. It sets precedence, question budgets, loop limits, issue handling and persona rules.
+Obey `.agents/LAWS.md` before anything below. It sets precedence, question budgets, loop limits, issue handling and persona rules.
 
 Orchestrated pipeline. The main session acts as, or delegates to, the `orchestrator` agent. Each stage writes one artifact into `.agents/runs/<slug>/` and must pass its gate before the next stage starts.
+
+If `.agents/LAWS.md` is missing, run `/agent-team-setup` first.
 
 ## Stages, owners, artifacts, gates
 

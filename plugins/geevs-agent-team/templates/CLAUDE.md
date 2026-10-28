@@ -6,10 +6,10 @@
 Levels: 1 assisted, 2 supervised, 3 policy-driven, 4 continuous. At level 1 and 2 a human approves every merge and release.
 
 ## Laws
-The plugin's `LAWS.md` binds every agent: precedence, hard rules, question budget (one batch at intake, max 2 more), loop limits (3 verify loops, 2 fix attempts, 2 retries), issue severities S1 to S4, persona rules. A blocked agent stops and writes the law number to `00-status.md`.
+`.agents/LAWS.md` binds every agent: precedence, hard rules, question budget (one batch at intake, max 2 more), loop limits (3 verify loops, 2 fix attempts, 2 retries), issue severities S1 to S4, persona rules. A blocked agent stops and writes the law number to `00-status.md`.
 
 ## Quality
-The plugin's `QUALITY.md` defines done: functions under 30 lines, cognitive complexity 15, cyclomatic 10, nesting 3, params 4; tests for changed logic; OWASP pass, secrets and dependency scans; data classification and WCAG 2.2 AA where relevant. Hooks block force pushes, pushes and commits to the default branch, deploys, publishes, merges and secret writes.
+`.agents/QUALITY.md` defines done: functions under 30 lines, cognitive complexity 15, cyclomatic 10, nesting 3, params 4; tests for changed logic; OWASP pass, secrets and dependency scans; data classification and WCAG 2.2 AA where relevant. Hooks block force pushes, pushes and commits to the default branch, deploys, publishes, merges and secret writes.
 
 ## Source of truth
 Read before acting, do not ask humans for what these answer:

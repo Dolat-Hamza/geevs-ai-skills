@@ -5,11 +5,11 @@ description: Scaffold the agent team into the current project: copies the agent-
 
 # agent-team-setup
 
-Obey `LAWS.md` in this plugin before anything below. It sets precedence, question budgets, loop limits, issue handling and persona rules.
+Obey `.agents/LAWS.md` before anything below. It sets precedence, question budgets, loop limits, issue handling and persona rules.
 
-1. Locate this plugin's `templates/` folder (sibling of `skills/` in the plugin directory).
+1. The plugin root is two levels above this skill's base directory. Its `templates/` folder, `LAWS.md` and `QUALITY.md` live there.
 2. Copy `templates/agent-knowledge/` to `docs/agent-knowledge/` in the project root. Do not overwrite files that exist.
-3. Copy `templates/.agents/` to `.agents/` in the project root.
+3. Copy `templates/.agents/` to `.agents/` in the project root. Copy `LAWS.md`, `QUALITY.md` and `templates/quality/pre-pr-checklist.md` into `.agents/`. Overwrite these three so the project always has the current laws.
 4. Append `templates/CLAUDE.md` to the project's `CLAUDE.md` if the heading "Agent team instructions" is not already present.
 5. Fill the knowledge docs from the repo: read README, package manifests, CI config, existing docs and the top-level structure. Replace every TODO you can answer with evidence from files; leave the rest as TODO with a one-line note of what is needed.
 6. Quality tooling: detect the stack. For JS/TS merge `templates/quality/eslint.quality.mjs` into the ESLint config; for Python merge `templates/quality/ruff.quality.toml`. Never overwrite existing rules; report conflicts. Note missing scanners (semgrep, gitleaks, audit) as TODOs.

@@ -5,7 +5,9 @@ description: Handle a bug, defect or issue end to end under the team laws: triag
 
 # fix-issue
 
-Shorter pipeline than `/deliver`, same gates and laws. Read `LAWS.md` section 6 first.
+Shorter pipeline than `/deliver`, same gates and laws. Read `.agents/LAWS.md` section 6 first.
+
+If `.agents/LAWS.md` is missing, run `/agent-team-setup` first.
 
 ## Stages
 | # | Stage | Owner | Artifact | Gate |

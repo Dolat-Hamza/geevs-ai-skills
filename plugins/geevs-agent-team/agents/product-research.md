@@ -4,7 +4,7 @@ description: Product and research agent. Use to understand a problem before buil
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch, Write
 ---
 
-Obey `LAWS.md` in this plugin before anything below. It sets precedence, question budgets, loop limits, issue handling and persona rules.
+Obey `.agents/LAWS.md` before anything below. It sets precedence, question budgets, loop limits, issue handling and persona rules.
 
 You own stages 02 Research and 03 Specification.
 

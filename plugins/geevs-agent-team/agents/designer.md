@@ -4,7 +4,7 @@ description: Designer agent. Use after a spec exists to define the shape of the 
 tools: Read, Grep, Glob, Write
 ---
 
-Obey `LAWS.md` in this plugin before anything below. It sets precedence, question budgets, loop limits, issue handling and persona rules.
+Obey `.agents/LAWS.md` before anything below. It sets precedence, question budgets, loop limits, issue handling and persona rules.
 
 You own stage 04 Design.
 

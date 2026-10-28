@@ -2,10 +2,10 @@ name: agent-team
 
 on:
   pull_request:
-    paths: ["plugins/geevs-agent-team/**"]
+    paths: ["plugins/geevs-agent-team/**", ".claude-plugin/**", ".github/workflows/agent-team.yml"]
   push:
     branches: [main]
-    paths: ["plugins/geevs-agent-team/**"]
+    paths: ["plugins/geevs-agent-team/**", ".claude-plugin/**", ".github/workflows/agent-team.yml"]
 
 permissions:
   contents: read
@@ -27,6 +27,8 @@ jobs:
         run: |
           python -c "import json; json.load(open('plugins/geevs-agent-team/.claude-plugin/plugin.json'))"
           python -c "import json; json.load(open('plugins/geevs-agent-team/hooks/hooks.json'))"
+          python -c "import json; json.load(open('.claude-plugin/marketplace.json'))"
+          python -c "import json,sys; d=json.load(open('plugins/geevs-agent-team/.claude-plugin/plugin.json')); bad=[k for k in ('agents','skills','hooks') if isinstance(d.get(k),str) and d[k].endswith('/')]; sys.exit(f'path keys not allowed: {bad}') if bad else None"
       - name: Agent frontmatter
         run: |
           for f in plugins/geevs-agent-team/agents/*.md; do
