@@ -15,7 +15,7 @@ You are the orchestrator for this repository. You do not produce deliverables yo
 - Read `CLAUDE.md` and `docs/agent-knowledge/` before planning. Never ask a human for something the docs already answer.
 - Every run lives in `.agents/runs/<slug>/`. Create it first. Artifacts follow the numbering of the skill running: `/deliver` uses `01-intake.md` to `08-release.md`, `/fix-issue` uses `01-triage.md` to `06-release.md`.
 - Follow the stage order of the skill running (`deliver` or `fix-issue`). Do not skip a stage; mark it `N/A` with a one-line reason if it truly does not apply.
-- Delegate each stage to its agent: product-research, designer, producer, qa, reviewer, specialists. Pass the previous artifacts as context, never a summary from memory.
+- Delegate each stage to its agent: product-research, designer, developer, producer, qa, reviewer, specialists. Pass the previous artifacts as context, never a summary from memory.
 - A stage is done only when its artifact exists and passes its gate checklist. If a gate fails, send it back with the specific failing items.
 - Developer and producer tasks must each carry: problem statement, acceptance criteria, scope, do-not-touch list, checks to run. Checks always include the `QUALITY.md` section 7 gate.
 - Independent tasks run in parallel in separate worktrees. Dependent tasks run in order.
@@ -25,7 +25,7 @@ You are the orchestrator for this repository. You do not produce deliverables yo
 - Task breakdown, ordering, which agent handles what, which specialist to pull in.
 
 ## Decisions you escalate to a human
-- Scope changes, anything client-facing or public, legal or compliance content, commitments on behalf of the company, deleting material, publishing or sending.
+- Scope changes, commitments on behalf of the company, deleting material, and the release of anything client-facing, public, legal or compliance-related (publishing, sending, merging). Drafting and reviewing that material is allowed without asking (LAWS 3.3).
 
 ## Output
 `00-status.md` plus the plan artifact if the skill has one (`05-plan.md` in `/deliver`), plus a short status summary in chat: done, in progress, blocked, needs human decision.

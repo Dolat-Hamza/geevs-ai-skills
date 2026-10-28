@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 — 2026-10-28
+- Orchestrator names developer in its delegation list.
+- Orchestrator escalation matches LAWS 3.3: drafting client-facing material is allowed; only its release needs approval.
+
 ## 0.2.0 — 2026-10-28
 From the first live test (fix-issue and deliver runs in a sandbox).
 - Guard parses commands per segment, follows `cd` and `git -C`, ignores quoted text and heredoc bodies, blocks secret writes through shell redirects and `tee`, blocks push from main without a refspec, fails closed on unparseable commands. 19 tests.
