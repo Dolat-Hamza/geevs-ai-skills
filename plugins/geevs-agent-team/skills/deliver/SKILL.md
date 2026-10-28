@@ -1,8 +1,7 @@
 ---
 name: deliver
-description: Run a goal through interview, research, spec, isolated build, independent review and human release. For features, bug fixes, documents and processes.
+description: Run a goal through interview, research, spec, isolated build, independent review and human release. Use when asked to deliver, build, fix or write something non-trivial: features, bug fixes, documents, processes.
 argument-hint: <goal>
-disable-model-invocation: true
 ---
 
 # Deliver: $ARGUMENTS
