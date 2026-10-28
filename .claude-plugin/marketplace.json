@@ -40,7 +40,7 @@
     {
       "name": "geevs-agent-team",
       "source": "./plugins/geevs-agent-team",
-      "description": "Geevs agent team: orchestrator, product/research, designer, developer, producer, QA, reviewer and specialist agents (architecture, security, performance, compliance, domain) plus the /deliver 8-stage pipeline, /fix-issue bug pipeline, /agent-team-setup scaffolding, LAWS.md and QUALITY.md governing p"
+      "description": "Gated delivery for code and documents: interview, research, spec, isolated build, independent review, human release. Run state and gates are enforced by scripts and hooks."
     },
     {
       "name": "product-skills",

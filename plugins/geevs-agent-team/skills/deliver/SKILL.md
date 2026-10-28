@@ -1,48 +1,39 @@
 ---
 name: deliver
-description: Run the full agent delivery pipeline for one deliverable or change: intake, research, spec, design, plan, production, verification, release. Use for any non-trivial piece of work. Invoke as /deliver <goal>.
+description: Run a goal through interview, research, spec, isolated build, independent review and human release. For features, bug fixes, documents and processes.
+argument-hint: <goal>
+disable-model-invocation: true
 ---
 
-# deliver
+# Deliver: $ARGUMENTS
 
-Plugin version: 0.2.2. State it at the top of every report.
+Set `RS="python3 <this skill's base directory>/../../scripts/run_state.py"` with the absolute path, and run it from the project root. If `.claude/agent-team.json` is missing, run `/geevs-agent-team:setup` first.
 
-Obey `.agents/LAWS.md` before anything below. It sets precedence, question budgets, loop limits, issue handling and persona rules.
+## 1. Interview
+Ask at most four questions with AskUserQuestion, only what the request, repo and docs do not answer: the goal, who uses the result, constraints, and what done looks like.
 
-Orchestrated pipeline. The main session acts as, or delegates to, the `orchestrator` agent. Each stage writes one artifact into `.agents/runs/<slug>/` and must pass its gate before the next stage starts.
+## 2. Start
+`$RS new <slug> "<goal>"` prints the run folder's absolute path. Use absolute paths in every brief.
 
-If `.agents/LAWS.md` is missing, run `/agent-team-setup` first.
+## 3. Research
+Spawn `researcher` agents only for open questions: none if the repo answers it, otherwise one per independent question, at most three in parallel. Each writes `<run>/research/<topic>.md`.
 
-## Stages, owners, artifacts, gates
+## 4. Spec
+Fill `<run>/spec.md`. Each acceptance criterion is `- [ ] ACn: <observable pass/fail statement and how to check it>`. For a bug, record the exact reproduction command and output; AC1 is that it no longer reproduces. Run `$RS criteria <slug>`.
 
-| # | Stage | Owner | Artifact | Gate to pass |
-|---|---|---|---|---|
-| 01 | Intake | orchestrator with human | `01-intake.md` | Goal, value, audience, constraints, definition of done filled; confirmed by the human or by the request text |
-| 02 | Research | product-research | `02-research.md` | Existing materials cited by file; options compared; risks split verified/assumed |
-| 03 | Specification | product-research | `03-spec.md` | Every acceptance criterion binary and checkable; out-of-scope listed; open questions have defaults |
-| 04 | Design | designer | `04-design.md` | Outline, format, tone, reader journey set; reuses existing templates |
-| 05 | Plan | orchestrator (+ specialists) | `05-plan.md` | Each task has problem, criteria, scope, do-not-touch, checks, dependencies, size under one day |
-| 06 | Production | developer (code) or producer (deliverables), one per task, parallel where independent | `06-dev-<task>.md` or `06-prod-<task>.md` + PR | Self-check evidence per criterion; report lists unchecked areas |
-| 07 | Verification | qa and reviewer, independently and in parallel | `07-qa.md`, `07-review.md` | QA verdict pass, or pass with minor defects when every defect is S4 and logged; review has no blockers |
-| 08 | Release | human or authorized policy | `08-release.md` | Human approval recorded; owner, channel, correction path noted |
+**Gate 1:** show the spec to the user and wait for approval. Then `$RS phase <slug> approved`.
 
-## Procedure
-1. Create `.agents/runs/<slug>/` and copy templates from this skill's `templates/` folder.
-2. Fill `01-intake.md` from the request. If the request answers every field, record `confirmed: request text` and continue. Otherwise ask the human the missing fields as the one intake batch (LAWS 4); stop until answered.
-3. Delegate stages 02 to 04 in order and write 05 yourself. Pass prior artifacts by absolute path.
-4. Pull a specialist (architect, security, performance, compliance, domain) into stage 05 when the plan touches their trigger areas listed in their agent descriptions.
-5. For stage 06 spawn one developer or producer per task in its own worktree.
-6. Stage 07 runs qa and reviewer in parallel on the PR. Failures go back to stage 06 with the specific items. QA and reviewer may use the library skills named in their agent files. Max three loops, then escalate to human. After any loop that changes the deliverable, both QA and reviewer re-check it.
-7. Stage 08: present the human a release summary. Never publish, send or merge to the default branch without recorded approval, unless `CLAUDE.md` autonomy level permits it.
-8. Update `00-status.md` after every stage change.
+## 5. Build
+`$RS phase <slug> build`. Spawn one `builder` with the spec path, a branch name, and what not to touch.
 
-## Autonomy level
-Read the current level from `CLAUDE.md`. Level 1 and 2: human approves merge and release. Level 3: merge allowed when QA pass and review clean. Release always human for client-facing material. See `README.md`.
+## 6. Review
+1. `$RS review-round <slug>`. If it fails, the review cap is reached and the run is blocked: report to the user and stop.
+2. `$RS phase <slug> review`, then `$RS tree <slug> save <worktree>`.
+3. Spawn one `reviewer` with the spec path, the worktree path, and the command `$RS pass <slug> <ACn> "<evidence>"`, run from the project root.
+4. `$RS tree <slug> verify <worktree>`. If it fails, the review is void: repeat from step 1.
+5. If `$RS check <slug>` fails, send the reviewer's findings to a new `builder` on the same branch, then repeat from step 1.
 
-## Handoffs
-Every handoff names the run folder by absolute path. Agents in a worktree read inputs and write artifacts there, because untracked run files are not copied into worktrees. Create worktrees under `.agents/worktrees/`.
+## 7. Release
+`$RS check <slug>` must pass. `$RS phase <slug> release`. Give the user: what changed, the branch, evidence per criterion, and open risks. Pushing, merging and deploying are the user's; project settings ask before each. When the user confirms, `$RS phase <slug> done`.
 
-## Handling failure
-- Gate fail: return to owner with failing checklist items, do not advance.
-- Agent asks a question the docs answer: point it at the doc, do not answer from memory.
-- Scope creep discovered mid-pipeline: stop, write it to `00-status.md` under decisions needed, ask human.
+If the work cannot proceed, `$RS phase <slug> blocked` and tell the user why.
