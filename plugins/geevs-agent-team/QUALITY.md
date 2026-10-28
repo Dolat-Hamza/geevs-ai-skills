@@ -10,7 +10,7 @@ Companion to `LAWS.md`. Laws say what may happen; this file says what "good" mea
 - No duplication: a third copy of the same logic becomes a function.
 - Errors handled where they can be acted on, never swallowed. Every catch logs or rethrows with context.
 - Explicit types at module boundaries. No `any`, no untyped public functions.
-- Dependencies: add only with a one-line reason in the PR, pinned, licence checked against `ATTRIBUTION.md` rules.
+- Dependencies: add only with a one-line reason in the PR, pinned, licence compatible with the project's licence and recorded in its attribution or NOTICE file (create one if missing).
 - Match the surrounding conventions. Consistency beats preference.
 
 ## 2. Complexity limits (hard)

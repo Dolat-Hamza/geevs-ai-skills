@@ -12,7 +12,7 @@ If `.agents/LAWS.md` is missing, run `/agent-team-setup` first.
 ## Stages
 | # | Stage | Owner | Artifact | Gate |
 |---|---|---|---|---|
-| 1 | Triage | orchestrator (+ human for S1) | `01-triage.md` | severity set, affected area, who is informed |
+| 1 | Triage | orchestrator (+ human for S1) | `01-triage.md` | severity set, affected area, who is informed; S2 to S4 proceed on the report text, S1 waits for the human |
 | 2 | Reproduce | qa | `02-repro.md` | exact steps, expected vs actual, pasted evidence. No repro → stop and report |
 | 3 | Isolate | developer or producer (+ specialist if security, performance, data) | `03-cause.md` | one root cause named, evidence, alternatives ruled out |
 | 4 | Fix | same agent, own branch | `04-fix.md` + PR | regression test added first and failing, then passing; pasted output; scope = cause + test |

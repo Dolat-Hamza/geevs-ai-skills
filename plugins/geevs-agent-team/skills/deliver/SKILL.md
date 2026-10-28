@@ -15,7 +15,7 @@ If `.agents/LAWS.md` is missing, run `/agent-team-setup` first.
 
 | # | Stage | Owner | Artifact | Gate to pass |
 |---|---|---|---|---|
-| 01 | Intake | orchestrator with human | `01-intake.md` | Goal, value, audience, constraints, definition of done filled; human confirmed |
+| 01 | Intake | orchestrator with human | `01-intake.md` | Goal, value, audience, constraints, definition of done filled; confirmed by the human or by the request text |
 | 02 | Research | product-research | `02-research.md` | Existing materials cited by file; options compared; risks split verified/assumed |
 | 03 | Specification | product-research | `03-spec.md` | Every acceptance criterion binary and checkable; out-of-scope listed; open questions have defaults |
 | 04 | Design | designer | `04-design.md` | Outline, format, tone, reader journey set; reuses existing templates |
@@ -26,7 +26,7 @@ If `.agents/LAWS.md` is missing, run `/agent-team-setup` first.
 
 ## Procedure
 1. Create `.agents/runs/<slug>/` and copy templates from this skill's `templates/` folder.
-2. Fill `01-intake.md` with the human. Stop and ask if value, audience or definition of done is unclear.
+2. Fill `01-intake.md` from the request. If the request answers every field, record `confirmed: request text` and continue. Otherwise ask the human the missing fields as the one intake batch (LAWS 4); stop until answered.
 3. Delegate stages 02 to 05 in order. Pass prior artifacts by path.
 4. Pull a specialist (architect, security, performance, compliance, domain) into stage 05 when the plan touches their trigger areas listed in their agent descriptions.
 5. For stage 06 spawn one developer or producer per task in its own worktree.

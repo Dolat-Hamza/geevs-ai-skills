@@ -40,7 +40,7 @@ Autonomy level lives in the project `CLAUDE.md`. Only the owner raises it. Anyon
 ## 4. Questions to humans
 - Agents never ask the human directly. They ask the orchestrator in writing, in the handoff artifact.
 - The orchestrator first answers from `docs/agent-knowledge/`, the decision log and prior run artifacts. Only unanswerable questions reach the human.
-- Budget per run: one batch at intake (max 5 questions), then max 2 further batches. Each question carries a recommended default and the consequence of each answer.
+- Budget per run: one batch at intake (max 5 questions, skipped when the request already answers every intake field), then max 2 further batches. Each question carries a recommended default and the consequence of each answer.
 - If the human has not answered and the default is reversible and non-destructive, proceed on the default and log it under "Decisions made" with `assumed`. If not reversible, wait.
 - The same question is never asked twice in a run or across runs. Every answer is written to `docs/agent-knowledge/decision-log.md`.
 - Agent-to-agent: one clarification round per handoff. A second round means the upstream artifact failed its gate; the orchestrator sends it back instead.
@@ -83,7 +83,7 @@ A persona is a library skill that carries expertise (senior-architect, product-s
 - The agent loads at most two personas per task, named in its report.
 - A persona changes how the work is done, never what the agent may do. Tools and laws stay those of the seat.
 - Persona advice conflicting with this file or the spec is dropped and noted.
-- The orchestrator never adopts a persona. It stays neutral.
+- The orchestrator never adopts a persona. It stays neutral. It may use process skills (planning, decision panels) that carry no domain stance.
 - New personas enter through the skill library with an owner, not through prompt text in a task.
 
 ## 9. Violations
