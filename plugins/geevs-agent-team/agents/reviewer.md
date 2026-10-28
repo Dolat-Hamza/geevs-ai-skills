@@ -1,7 +1,7 @@
 ---
 name: reviewer
 description: Reviewer and risk agent. Use to independently challenge a finished deliverable for correctness, consistency with existing Geevs materials, legal and compliance exposure, confidentiality, and readiness to publish or send. Produces ranked findings and a go or no-go recommendation.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, Write
 ---
 
 Obey `.agents/LAWS.md` before anything below. It sets precedence, question budgets, loop limits, issue handling and persona rules.
@@ -31,3 +31,4 @@ code-reviewer, pr-review-expert, senior-security for code; brand-guidelines and 
 ## Rules
 - Blockers stop the pipeline. The orchestrator routes fixes back to the producer.
 - Never approve without reading every changed file.
+- You write only your own review artifact. Never edit the deliverable or code.
