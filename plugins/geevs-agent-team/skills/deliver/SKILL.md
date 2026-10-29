@@ -38,7 +38,7 @@ Fill `<run>/spec.md`. Each acceptance criterion is `- [ ] ACn: <observable pass/
 4. `RS tree <slug> verify <worktree>`. If it fails, the review is void: repeat from step 1.
 5. Proofs, chosen by what the branch changed:
    - Code: `RS redgreen <slug> <worktree> -- <test command>`. New tests must fail on the base code and pass on the branch.
-   - Documents: save the reviewer's claims list to `<run>/claims.json`, then `RS claims <slug> <worktree> <run>/claims.json`. Every claim must appear in the document, every quote at its cited source line, and every number in some claim.
+   - Documents: save the reviewer's claims list to `<run>/claims.json`, then `RS claims <slug> <worktree> <run>/claims.json`. Every claim must appear in the document, every quote at its cited source line, and every number in some claim; derived numbers are recomputed from their `calc`.
 6. If `RS check <slug>` fails, send the reviewer's findings and any failed proof to a new `builder` on the same branch, then repeat from step 1.
 
 ## 7. Release

@@ -144,6 +144,70 @@ class Claims(Repo):
         result = proofs.traced(self.repo, [self.claim()])
         self.assertIn("number 3 has no sourced claim", result["problems"])
 
+    def live_note(self):
+        """The customer note written in the 1.2.0 live test, with its README lines."""
+        (self.repo / "README.md").write_text(
+            "| under 1,000 | 1.0% |\nMinimum fee 2.00 GBP. Fees round half-up to 2 decimals.\n"
+        )
+        self.write_note(
+            "Every transfer has a minimum fee of 2.00 GBP (README.md, line 2). For example, on a "
+            "transfer of 100 GBP the rate is 1.0% (README.md, line 1), which would be 1.00 GBP, but "
+            "that is below the minimum, so the fee is 2.00 GBP.\n"
+        )
+
+    def note_claims(self, **example):
+        rate = {
+            "file": "note.md",
+            "claim": "on a transfer of 100 GBP the rate is 1.0% (README.md, line 1)",
+            "source": "README.md:1",
+            "quote": "| under 1,000 | 1.0% |",
+        }
+        derived = {
+            "file": "note.md",
+            "claim": "which would be 1.00 GBP",
+            "source": "README.md:1",
+            "quote": "| under 1,000 | 1.0% |",
+        }
+        minimum = {
+            "file": "note.md",
+            "claim": "minimum fee of 2.00 GBP (README.md, line 2)",
+            "source": "README.md:2",
+            "quote": "Minimum fee 2.00 GBP.",
+        }
+        return [{**rate, **example.get("rate", {})}, {**derived, **example.get("derived", {})}, minimum]
+
+    def test_live_claims_without_calc_now_fail(self):
+        self.live_note()
+        problems = proofs.traced(self.repo, self.note_claims())["problems"]
+        self.assertIn("claim 1: 100 not in the quote and no calc given", problems)
+        self.assertIn("claim 2: 1.00 not in the quote and no calc given", problems)
+
+    def test_given_input_and_calc_pass(self):
+        self.live_note()
+        claims = self.note_claims(rate={"given": [100]}, derived={"given": [100], "calc": "100 * 1.0 / 100"})
+        self.assertTrue(proofs.traced(self.repo, claims)["ok"])
+
+    def test_wrong_figure_caught_by_calc(self):
+        self.live_note()
+        (self.repo / "note.md").write_text((self.repo / "note.md").read_text().replace("1.00 GBP", "1.50 GBP"))
+        commit(self.repo, "wrong figure")
+        claims = self.note_claims(
+            rate={"given": [100]},
+            derived={"claim": "which would be 1.50 GBP", "given": [100], "calc": "100 * 1.0 / 100"},
+        )
+        self.assertIn("claim 2: 1.50 does not match calc result 1.0", proofs.traced(self.repo, claims)["problems"])
+
+    def test_calc_cannot_smuggle_unquoted_numbers(self):
+        self.live_note()
+        claims = self.note_claims(rate={"given": [100]}, derived={"given": [100], "calc": "100 * 1.5 / 150 * 1"})
+        problems = proofs.traced(self.repo, claims)["problems"]
+        self.assertTrue(any("calc uses 1.5" in p for p in problems))
+
+    def test_calc_rejects_code(self):
+        self.live_note()
+        claims = self.note_claims(rate={"given": [100]}, derived={"given": [100], "calc": "__import__('os')"})
+        self.assertTrue(any("calc not valid" in p for p in proofs.traced(self.repo, claims)["problems"]))
+
     def test_no_claims_is_not_proof(self):
         self.write_note("Text.\n")
         self.assertFalse(proofs.traced(self.repo, [])["ok"])
@@ -261,6 +325,10 @@ class CriteriaRule(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("AC1", err)
         self.assertNotIn("AC2", err)
+
+    def test_comparison_allowed_placeholder_rejected(self):
+        self.assertEqual(self.criteria("- [ ] AC1: fast. Check: `python3 bench.py` shows ms < 50\n")[0], 0)
+        self.assertEqual(self.criteria("- [ ] AC1: works. Check: `run_state redgreen r1 <worktree>`\n")[0], 1)
 
     def test_untouched_template_rejected(self):
         self.assertEqual(call("criteria", "r1")[0], 1)

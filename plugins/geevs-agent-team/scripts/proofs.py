@@ -1,5 +1,8 @@
 """Deterministic proofs for a review: test-first for code, source-traced claims for documents."""
 
+import ast
+import decimal
+import operator
 import pathlib
 import re
 import subprocess
@@ -30,6 +33,9 @@ DOC_SUFFIXES = {".md", ".txt", ".rst", ".html", ".csv"}
 TEST_PATH = re.compile(r"(^|/)(tests?|__tests__)/|(^|/)test_[^/]+$|_test\.[a-z]+$|\.(test|spec)\.[a-z]+$")
 NUMBER = re.compile(r"\d[\d,]*(?:\.\d+)?")
 LIST_ORDINAL = re.compile(r"^\s*\d+[.)]\s", re.M)
+CITATION = re.compile(r"\bline \d+\b|\S+\.(md|txt|rst|html|csv|py)\b", re.I)
+PERCENT_BASE = "100"
+OPS = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul, ast.Div: operator.truediv}
 
 
 def git(path, *args, check=True):
@@ -90,6 +96,48 @@ def normalise(text):
     return " ".join(text.replace(",", "").split())
 
 
+def numbers(text):
+    """Numbers as written, commas removed, so 1.0 (a rate) and 1.00 (a fee) stay distinct."""
+    return {n.replace(",", "") for n in NUMBER.findall(CITATION.sub("", text or ""))}
+
+
+def evaluate(node):
+    """Exact arithmetic over + - * / and numeric literals only."""
+    if isinstance(node, ast.Expression):
+        return evaluate(node.body)
+    if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+        return decimal.Decimal(str(node.value))
+    if isinstance(node, ast.BinOp) and type(node.op) in OPS:
+        return OPS[type(node.op)](evaluate(node.left), evaluate(node.right))
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.USub):
+        return -evaluate(node.operand)
+    raise ValueError("only numbers and + - * / are allowed")
+
+
+def support_problems(i, claim):
+    """Numbers in a claim must be quoted, declared as given inputs, or the result of its calc."""
+    allowed = numbers(claim.get("quote")) | numbers(" ".join(map(str, claim.get("given", []))))
+    unsupported = numbers(claim.get("claim")) - allowed
+    if not unsupported:
+        return []
+    if not claim.get("calc"):
+        return [f"claim {i}: {', '.join(map(str, sorted(unsupported)))} not in the quote and no calc given"]
+    try:
+        result = evaluate(ast.parse(str(claim["calc"]), mode="eval"))
+    except (SyntaxError, ValueError, ArithmeticError) as error:
+        return [f"claim {i}: calc not valid: {error}"]
+    problems = [
+        f"claim {i}: calc uses {n}, which is not quoted or given"
+        for n in numbers(str(claim["calc"])) - allowed - {PERCENT_BASE}
+    ]
+    problems += [
+        f"claim {i}: {n} does not match calc result {result}"
+        for n in sorted(unsupported)
+        if decimal.Decimal(n) != result
+    ]
+    return problems
+
+
 def claim_problems(path, claims):
     problems = []
     for i, claim in enumerate(claims, 1):
@@ -99,6 +147,7 @@ def claim_problems(path, claims):
             problems.append(f"claim {i}: text not found in {claim.get('file')}")
         if not source.is_file() or normalise(claim.get("quote", "")) not in normalise(source_text(source, claim)):
             problems.append(f"claim {i}: quote not found at {claim.get('source')}")
+        problems += support_problems(i, claim)
     return problems
 
 

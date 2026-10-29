@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.1 — 2026-10-29
+Fixes from the 1.2.0 live test.
+- Document proof checks derived numbers: each number in a claim must be on the quoted line, in `given`, or equal to its `calc`, which is recomputed exactly. In 1.2.0 a derived figure passed on any quote.
+- Stop gate applies only to the session that owns the run, and lets a session stop while an agent it started is still running.
+- Main-session spend after the last agent is recorded at Stop.
+- Placeholder rule rejects `<name>` placeholders only, so checks such as `ms < 50` are allowed.
+
 ## 1.2.0 — 2026-10-29
 - Criteria must name their check in backticks; `run_state criteria` rejects the rest.
 - Test-first proof for code: `run_state redgreen` runs the new tests against the base code (must fail) and the branch (must pass).

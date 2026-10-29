@@ -1,6 +1,6 @@
 {
   "name": "geevs-agent-team",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Gated delivery for code and documents: interview, research, spec, isolated build, independent review, human release. Gates, budgets and run state are enforced by scripts and hooks.",
   "author": {
     "name": "Geevs"

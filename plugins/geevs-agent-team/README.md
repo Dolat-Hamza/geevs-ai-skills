@@ -86,11 +86,11 @@ These are enforced by code, so they hold even if an agent ignores its instructio
 | Force pushes and edits to `.env` and key files are refused | Permission rules from setup |
 | A commit on `main` or `master` asks you first | Plugin hook |
 | Text that looks like a password or API key can't be written to a file | Plugin hook |
-| Claude is stopped if it tries to end its turn mid-build with criteria unchecked (the first attempt is blocked) | Plugin hook |
+| The session running the build is stopped if it tries to end its turn with criteria unchecked and no agent working (the first attempt is blocked) | Plugin hook |
 | Every acceptance criterion names how it is checked | `run_state.py` |
 | A criterion only passes with recorded evidence, and at most 3 reviews run | `run_state.py` |
 | Code: new tests fail on the old code and pass on the new | `run_state.py redgreen` |
-| Documents: every claim, quote and number traces to a cited source line | `run_state.py claims` |
+| Documents: every claim, quote and number traces to a cited source line; derived numbers are recomputed | `run_state.py claims` |
 | The reviewer can't change the work | Tools removed, and the repo is checked after each review |
 | Past the run's usage budget, Claude asks before starting more agents | Plugin hook |
 
@@ -126,6 +126,8 @@ The built work itself is on a branch named in the release summary.
 | "proof missing or out of date" | The proof wasn't run, or the branch changed after it ran | Ask Claude to rerun the proof for the current commit |
 | "new tests pass on the base code" | The new tests don't catch the problem they're meant to | The builder needs a test that fails before the fix |
 | "number ... has no sourced claim" | A figure in the document isn't backed by a source | Source it or remove it |
+| "... not in the quote and no calc given" | A figure is worked out rather than quoted | The reviewer adds the inputs (`given`) and the arithmetic (`calc`) |
+| "does not match calc result" | The document's arithmetic is wrong | Correct the figure |
 | "review limit of 3 reached" | The build failed review three times | Read the reviewer's findings and decide what to change |
 | An approval prompt about the budget | The run passed its usage budget | Approve to continue, or stop |
 | Claude won't end its turn mid-build | Criteria are still unchecked | Let the review finish, or ask Claude to mark the run blocked |
@@ -141,7 +143,7 @@ To switch a project off, delete `.claude/agent-team.local.json`, and remove the 
 | `skills/` | `deliver` and `setup` |
 | `hooks/` | commit, credential, Stop and budget checks; usage pricing |
 | `scripts/` | run state, review proofs and project setup |
-| `tests/` | 78 unit tests |
+| `tests/` | 88 unit tests |
 
 Run the tests from the repository root with:
 
