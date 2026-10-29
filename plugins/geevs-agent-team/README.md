@@ -1,15 +1,49 @@
 # geevs-agent-team
 
-Gated delivery for code and documents. The main session orchestrates; three agents do isolated work.
+A Claude Code plugin that runs a piece of work through a fixed, checked process instead of a single chat. You describe what you want; Claude interviews you, writes a spec you approve, has one agent build it on a separate branch, has a second agent check it independently, and hands it back to you to release.
+
+It works for code (features, bug fixes) and for written work (documents, customer notes, processes).
+
+## When to use it
+
+| Use it for | Skip it for |
+|---|---|
+| Changes you want reviewed before they ship | Quick questions and one-line edits |
+| Work other people will rely on: client-facing text, money, shared code | Exploring or prototyping |
+| Anything where you want a written record of what was asked, built and checked | Tasks cheaper to just do in a normal chat |
+
+On small tasks it is slower and uses more of your plan than a normal chat. It pays off when a mistake would be expensive.
+
+## How a run works
 
 ```
-/geevs-agent-team:deliver <goal>
-  interview ──> research (0-3 researchers) ──> spec ──> [you approve]
-  ──> builder (own worktree) ──> reviewer (records evidence) ──> [you push / merge]
-                     ^─────── failed criteria, up to 3 reviews ───────┘
+you: /geevs-agent-team:deliver <what you want>
+
+1. Interview   Claude asks up to 4 questions the repo can't answer.
+2. Research    Optional. Up to 3 researcher agents look things up and write cited notes.
+3. Spec        Claude writes spec.md: the problem, the scope, and pass/fail acceptance criteria.
+4. YOU APPROVE Nothing is built until you say yes.
+5. Build       A builder agent works on its own branch in a separate copy of the repo.
+6. Review      A reviewer agent that did not write the work checks every criterion and
+               records evidence. Failures go back to the builder, at most 3 reviews.
+7. Release     Claude summarises what changed and the evidence. YOU push or merge.
 ```
+
+You make two decisions: approving the spec and releasing the result. Everything in between runs on its own.
+
+## The three agents
+
+| Agent | Job | Model | Can it change files? |
+|---|---|---|---|
+| researcher | Answers one question with sources, writes a note | Haiku | Told to write only its note |
+| builder | Implements the approved spec on its own branch | Sonnet | Yes, in its own copy of the repo |
+| reviewer | Checks each acceptance criterion end to end and records evidence | Sonnet | No (Write and Edit are removed) |
+
+The coordinating role is your own Claude Code session, so you can answer its questions directly.
 
 ## Install
+
+You need Claude Code and access to the Geevs skills repository.
 
 ```bash
 claude plugin marketplace add Dolat-Hamza/geevs-ai-skills
@@ -18,67 +52,92 @@ claude plugin marketplace add Dolat-Hamza/geevs-ai-skills
 claude plugin install geevs-agent-team@geevs
 ```
 
-Then, in each project clone, open Claude Code in that folder and run `/geevs-agent-team:setup`. It writes `.claude/settings.local.json` and `.claude/agent-team.local.json`, excluded from git through `.git/info/exclude`, so they apply on every branch without a commit. Nothing is enforced in clones that have not run it.
+Restart Claude Code after installing or updating.
 
-Verified on Claude Code 2.1.267: researcher ran on `claude-haiku-5-5`, builder and reviewer on `claude-sonnet-5-5`. The docs list 2.1.271 or later for `omitClaudeMd`; older versions ignore it.
+## Set up a project (once per project folder)
 
-## What is enforced and how
+1. Open Claude Code **in the project's folder**. The safety rules only load when Claude Code is opened there.
+2. Run `/geevs-agent-team:setup`.
 
-| Rule | Mechanism |
+Setup writes two files, both kept out of git so nothing needs committing and they apply on every branch:
+
+- `.claude/settings.local.json`: the permission rules below.
+- `.claude/agent-team.local.json`: a marker that switches the plugin's checks on for this folder.
+
+Projects that have not run setup are untouched.
+
+## Your first run
+
+```
+/geevs-agent-team:deliver Transfers of exactly 1,000 GBP are charged the wrong tier; fix it to match the pricing table.
+```
+
+Answer the questions, read the spec, and reply to approve it. When Claude reports the run is at release, review the branch and the evidence, then push or merge it yourself.
+
+## What is enforced, and what isn't
+
+These are enforced by code, so they hold even if an agent ignores its instructions:
+
+| Rule | How |
 |---|---|
-| Push, PR merge, hard reset, deploy, publish ask you first | Local permission `ask` rules |
-| Force push and edits to `.env`, key files are refused | Local permission `deny` rules |
-| Commit on `main`/`master` asks you first | Plugin hook |
-| Credential-looking content in a file write is refused | Plugin hook |
-| A session cannot end mid-build or mid-review with unverified criteria | Plugin `Stop` hook reading `progress.json` |
-| Criteria come from the spec, pass only with evidence, reset every review, at most 3 reviews | `scripts/run_state.py` |
-| Reviewer cannot change the work | Write and Edit removed from the agent; HEAD and tracked files checked after review |
-| Spend over the run budget asks you before any further agent spawn | `SubagentStop` logs each agent's spend from its transcript; a hook on the Agent tool checks the total |
-| Runaway agents | `maxTurns` per agent |
+| `git push`, PR merge, `git reset --hard`, deploys and package publishes ask you first | Permission rules from setup |
+| Force pushes and edits to `.env` and key files are refused | Permission rules from setup |
+| A commit on `main` or `master` asks you first | Plugin hook |
+| Text that looks like a password or API key can't be written to a file | Plugin hook |
+| Claude is stopped if it tries to end its turn mid-build with criteria unchecked (the first attempt is blocked) | Plugin hook |
+| A criterion only passes with recorded evidence, and at most 3 reviews run | `run_state.py` |
+| The reviewer can't change the work | Tools removed, and the repo is checked after each review |
+| Past the run's usage budget, Claude asks before starting more agents | Plugin hook |
 
-Everything else (agent roles, interview, research scope) is instruction, not enforcement.
+Not enforced: the agents' working style, how good the research is, and anything outside a project that ran setup. Permission rules match the start of a command, so they don't stop wrapped commands such as `bash -c "..."`. For a hard security boundary, turn on Claude Code's sandboxing as well.
 
-Permission rules match command prefixes. They do not stop `bash -c`, full binary paths or scripts. For a hard boundary, enable Claude Code sandboxing.
+## Usage and cost
 
-## Cost
+- Each run has a budget of estimated usage, set to the equivalent of 5 USD by default. Ask Claude to set a different budget when the run starts, or to raise it later.
+- Ask Claude for the run's status to see its phase, unchecked criteria and usage so far.
+- Measured on test runs: the coordinating session uses about 90% of a run's usage. Running your session on Sonnet (`/model sonnet`) instead of Opus is the biggest saving.
+- To see the effect on your plan, run `/usage` before and after a run.
 
-| Agent | Model | Effort | Max turns | Skips CLAUDE.md |
-|---|---|---|---|---|
-| researcher | haiku | default | 25 | yes |
-| builder | sonnet | default | 50 | no |
-| reviewer | sonnet | high | 35 | yes |
+## Where things are saved
 
-The orchestrator is your main session and uses your model. Turn caps are two to three times the most turns each role used in recorded runs (12, 15 and 17). A capped agent returns partial work that can be resumed.
+Each run gets a folder, `.agents/runs/<name>/`, kept out of git:
 
-Each run has a budget of estimated API cost, $5 by default (`run_state new ... --budget-usd N`, raise with `run_state budget`). Spend is read from each agent's transcript when it stops and from the main session transcript, priced with the published per-model rates in `hooks/cost.py`. On a subscription this is an estimate of usage, not a bill.
+| File | What it holds |
+|---|---|
+| `spec.md` | What you approved |
+| `progress.json` | Phase, criteria, pass/fail, evidence |
+| `spend.jsonl` | Usage per agent and for the session |
+| `research/` | Researcher notes with sources |
 
-Measured, same sandbox and the same two tasks (a boundary bug fix and a one-paragraph customer note):
+The built work itself is on a branch named in the release summary.
 
-| Version | Agents | Orchestrator | Total |
-|---|---|---|---|
-| 0.1.x, all agents on Opus | $11.05 | $4.74 | $15.79 |
-| 1.1.1, builder and reviewer on Sonnet | $0.31 | $3.39 (Opus, includes setup and guard checks) | $3.70 |
+## Troubleshooting
 
-Per run in 1.1.1: bug fix $0.82, customer note $0.57. The orchestrating session is about 90% of the cost; running it on Sonnet (`/model sonnet`) is the largest remaining saving.
+| You see | Why | What to do |
+|---|---|---|
+| Rules don't apply (for example a force push isn't refused) | Claude Code wasn't opened in the project folder, or setup wasn't run there | Open Claude Code in that folder, run setup |
+| "run '...' is still open" | One run at a time per project | Finish it, or ask Claude to mark it done or blocked |
+| "review limit of 3 reached" | The build failed review three times | Read the reviewer's findings and decide what to change |
+| An approval prompt about the budget | The run passed its usage budget | Approve to continue, or stop |
+| Claude won't end its turn mid-build | Criteria are still unchecked | Let the review finish, or ask Claude to mark the run blocked |
+| A new version doesn't seem to apply | Sessions keep the version they started with | Restart Claude Code |
 
-Habits that cut cost the most, from the same data: start each run in a fresh session, keep briefs to file paths, and keep research to the questions the repo cannot answer.
+To switch a project off, delete `.claude/agent-team.local.json`, and remove the rules from `.claude/settings.local.json` if you want those gone too.
 
-## Run state
+## What's in this folder
 
-`.agents/runs/<slug>/`: `spec.md`, `progress.json`, `spend.jsonl`, `research/`. `.agents/active-run` names the open run.
+| Path | Contents |
+|---|---|
+| `agents/` | researcher, builder, reviewer |
+| `skills/` | `deliver` and `setup` |
+| `hooks/` | commit, credential, Stop and budget checks; usage pricing |
+| `scripts/` | run state and project setup |
+| `tests/` | 58 unit tests |
 
-## Tests
+Run the tests from the repository root with:
 
 ```bash
 python3 -m unittest discover -s plugins/geevs-agent-team/tests
 ```
 
-## Sources
-
-- Gated chain and evaluator pattern: https://www.anthropic.com/engineering/building-effective-agents
-- Spec, fresh-context build, read-only reviewer: https://code.claude.com/docs/en/best-practices
-- Subagents for research fan-out, files instead of long hand-offs: https://www.anthropic.com/engineering/multi-agent-research-system
-- Feature list with pass flags against premature completion: https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents
-- Permission rule semantics and limits: https://code.claude.com/docs/en/permissions
-- Cost levers and prompt caching: https://code.claude.com/docs/en/costs and https://code.claude.com/docs/en/prompt-caching
-- Prices: https://platform.claude.com/docs/en/about-claude/pricing
+Test reports are in the repository's `reports/` folder.
