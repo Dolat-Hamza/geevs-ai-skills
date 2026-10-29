@@ -11,7 +11,11 @@ import unittest
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "scripts"))
 import run_state  # noqa: E402
 
-SPEC = "# Goal\n\n## Acceptance criteria\n- [ ] AC1: fee for 1000 is 5.00\n- [ ] AC2: tests pass\n"
+SPEC = (
+    "# Goal\n\n## Acceptance criteria\n"
+    "- [ ] AC1: fee for 1000 is 5.00. Check: `python3 repro.py`\n"
+    "- [ ] AC2: tests pass. Check: `python3 -m unittest`\n"
+)
 
 
 def call(*argv):
