@@ -24,7 +24,7 @@ Ask at most four questions with AskUserQuestion, only what the request, repo and
 Spawn `researcher` agents only for open questions: none if the repo or one search answers it, otherwise one per independent question, at most three in parallel. Each writes `<run>/research/<topic>.md`.
 
 ## 4. Spec
-Fill `<run>/spec.md`. Each acceptance criterion is `- [ ] ACn: <observable pass/fail statement and how to check it>`. For a bug, record the exact reproduction command and output; AC1 is that it no longer reproduces. Run `RS criteria <slug>`.
+Fill `<run>/spec.md`. Each acceptance criterion is `- [ ] ACn: <observable pass/fail statement>. Check: <command, file:line or source in backticks>`. `RS criteria` rejects any criterion without a backticked check. For a bug, record the exact reproduction command and output; AC1 is that it no longer reproduces. Run `RS criteria <slug>`.
 
 **Gate 1:** show the spec to the user and wait for approval. Then `RS phase <slug> approved`.
 
@@ -36,7 +36,10 @@ Fill `<run>/spec.md`. Each acceptance criterion is `- [ ] ACn: <observable pass/
 2. `RS phase <slug> review`, then `RS tree <slug> save <worktree>`.
 3. Spawn one `reviewer` with the spec path, the worktree path, and the command `RS pass <slug> <ACn> "<evidence>"`, run from the project root.
 4. `RS tree <slug> verify <worktree>`. If it fails, the review is void: repeat from step 1.
-5. If `RS check <slug>` fails, send the reviewer's findings to a new `builder` on the same branch, then repeat from step 1.
+5. Proofs, chosen by what the branch changed:
+   - Code: `RS redgreen <slug> <worktree> -- <test command>`. New tests must fail on the base code and pass on the branch.
+   - Documents: save the reviewer's claims list to `<run>/claims.json`, then `RS claims <slug> <worktree> <run>/claims.json`. Every claim must appear in the document, every quote at its cited source line, and every number in some claim.
+6. If `RS check <slug>` fails, send the reviewer's findings and any failed proof to a new `builder` on the same branch, then repeat from step 1.
 
 ## 7. Release
 `RS check <slug>` must pass. `RS phase <slug> release`. Give the user: what changed, the branch, evidence per criterion, and open risks. Pushing, merging and deploying are the user's; project settings ask before each. When the user confirms, `RS phase <slug> done`.

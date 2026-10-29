@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0 — 2026-10-29
+- Criteria must name their check in backticks; `run_state criteria` rejects the rest.
+- Test-first proof for code: `run_state redgreen` runs the new tests against the base code (must fail) and the branch (must pass).
+- Source-traced proof for documents: `run_state claims` checks every claim is in the document, every quote is on its cited source line, and every number is covered by a claim.
+- `run_state check` requires the proof that matches what the branch changed, for the current commit. A new review round clears old proofs.
+
 ## 1.1.2 — 2026-10-29
 Fixes from the 1.1.1 live test.
 - Agent spend is read from the agent transcript at `SubagentStop`. Background agents reported no usage to `PostToolUse`, so 1.1.1 logged their cost as unknown and the budget saw only the orchestrator.

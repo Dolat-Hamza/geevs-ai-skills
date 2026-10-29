@@ -1,4 +1,4 @@
-"""Run state for /deliver: one folder per run, criteria with evidence, capped review rounds."""
+"""Run state for /deliver: one folder per run, criteria with evidence, proofs, capped review rounds."""
 
 import argparse
 import datetime
@@ -9,7 +9,9 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "hooks"))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import cost  # noqa: E402
+import proofs  # noqa: E402
 
 RUNS = pathlib.Path(".agents/runs")
 ACTIVE = pathlib.Path(".agents/active-run")
@@ -18,6 +20,7 @@ OPEN_PHASES = ("build", "review")
 MAX_REVIEW_ROUNDS = 3
 DEFAULT_BUDGET_USD = 5.0
 CRITERION = re.compile(r"^- \[[ xX]\] (AC\d+):\s*(.+)$", re.M)
+CHECK = re.compile(r"`[^`]+`")
 SPEC_TEMPLATE = """# {goal}
 
 ## Problem
@@ -29,7 +32,7 @@ SPEC_TEMPLATE = """# {goal}
 ## Reproduction (bugs only)
 
 ## Acceptance criteria
-- [ ] AC1:
+- [ ] AC1: <observable statement>. Check: `<command, file:line or source>`
 """
 
 
@@ -80,8 +83,11 @@ def cmd_criteria(args):
     state = load(args.slug)
     found = CRITERION.findall((run_dir(args.slug) / "spec.md").read_text())
     criteria = [{"id": cid, "text": text.strip(), "passes": False, "evidence": None} for cid, text in found]
-    if not criteria or any(not c["text"] for c in criteria):
-        raise StateError("spec.md needs at least one '- [ ] ACn: <checkable statement>'")
+    if not criteria:
+        raise StateError("spec.md needs at least one '- [ ] ACn: <statement>. Check: `<how>`'")
+    unchecked = [c["id"] for c in criteria if not CHECK.search(c["text"]) or "<" in c["text"]]
+    if unchecked:
+        raise StateError("criteria must name their check in backticks: " + ", ".join(unchecked))
     state["criteria"] = criteria
     save(args.slug, state)
     return f"{len(criteria)} criteria"
@@ -122,6 +128,7 @@ def cmd_review_round(args):
     state["review_rounds"] += 1
     for criterion in state["criteria"]:
         criterion.update(passes=False, evidence=None)
+    state.pop("proofs", None)
     save(args.slug, state)
     return f"review round {state['review_rounds']}"
 
@@ -130,12 +137,63 @@ def failing(state):
     return [c["id"] for c in state["criteria"] if not c["passes"]]
 
 
+def missing_proofs(state):
+    """Proofs the branch's changed files require that are absent, failed, or for an older commit."""
+    path = state.get("worktree")
+    if not path:
+        return []
+    try:
+        _, head, files = proofs.changed_files(path)
+    except RuntimeError as error:
+        raise StateError(str(error)) from error
+    recorded = state.get("proofs", {})
+    names = {"code": "test-first (redgreen)", "docs": "source tracing (claims)"}
+    return [
+        names[kind]
+        for kind, needed in proofs.needs(files).items()
+        if needed and not (recorded.get(kind, {}).get("ok") and recorded[kind].get("head") == head)
+    ]
+
+
 def cmd_check(args):
     state = load(args.slug)
     missing = failing(state)
     if missing or not state["criteria"]:
         raise StateError("not passing: " + (", ".join(missing) or "no criteria"))
-    return "all criteria pass"
+    absent = missing_proofs(state)
+    if absent:
+        raise StateError("proof missing or out of date: " + ", ".join(absent))
+    return "all criteria pass with proofs"
+
+
+def record_proof(slug, kind, result):
+    state = load(slug)
+    state.setdefault("proofs", {})[kind] = result
+    save(slug, state)
+    if not result["ok"]:
+        raise StateError(f"{kind} proof failed: " + (result.get("reason") or "; ".join(result.get("problems", []))))
+    return json.dumps(result)
+
+
+def cmd_redgreen(args):
+    command = args.command[1:] if args.command[:1] == ["--"] else args.command
+    if not command:
+        raise StateError("give the test command after --")
+    try:
+        result = proofs.red_green(args.path, command)
+    except RuntimeError as error:
+        raise StateError(str(error)) from error
+    return record_proof(args.slug, "code", result)
+
+
+def cmd_claims(args):
+    try:
+        claims = json.loads(pathlib.Path(args.claims).read_text())
+    except (OSError, json.JSONDecodeError) as error:
+        raise StateError(f"cannot read claims file: {error}") from error
+    if not isinstance(claims, list):
+        raise StateError("claims file must be a JSON list")
+    return record_proof(args.slug, "docs", proofs.traced(args.path, claims))
 
 
 def tree_snapshot(path):
@@ -154,6 +212,7 @@ def cmd_tree(args):
     state = load(args.slug)
     if args.action == "save":
         state["tree"] = tree_snapshot(args.path)
+        state["worktree"] = str(pathlib.Path(args.path).resolve())
         save(args.slug, state)
         return "tree saved"
     if state.get("tree") != tree_snapshot(args.path):
@@ -199,6 +258,14 @@ def parser():
     tree.add_argument("slug")
     tree.add_argument("action", choices=("save", "verify"))
     tree.add_argument("path")
+    redgreen = sub.add_parser("redgreen")
+    redgreen.add_argument("slug")
+    redgreen.add_argument("path")
+    redgreen.add_argument("command", nargs=argparse.REMAINDER)
+    claims = sub.add_parser("claims")
+    claims.add_argument("slug")
+    claims.add_argument("path")
+    claims.add_argument("claims")
     budget = sub.add_parser("budget")
     budget.add_argument("slug")
     budget.add_argument("usd", type=float)
@@ -214,6 +281,8 @@ COMMANDS = {
     "review-round": cmd_review_round,
     "check": cmd_check,
     "tree": cmd_tree,
+    "redgreen": cmd_redgreen,
+    "claims": cmd_claims,
     "budget": cmd_budget,
     "status": cmd_status,
 }
