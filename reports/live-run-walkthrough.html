@@ -1,0 +1,307 @@
+<title>Agent Team Live Run</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a run log told as two vertical timelines. Each step shows who acted and the real artifact it produced. Teal = agents, copper = you, indigo = scripts. */
+:root{
+  --bg:#f3f4f6; --surface:#ffffff; --surface-2:#e9ecf1; --line:#cfd5de;
+  --fg:#15202b; --muted:#5b6775;
+  --agent:#0f7a6c; --agent-soft:#d6efea;
+  --human:#b5651d; --human-soft:#f6e3d0;
+  --script:#4458a8; --script-soft:#dfe4f7;
+  --pass:#2e7d4f; --fail:#b3261e; --add:#2e7d4f; --del:#b3261e;
+  --term:#1b222b; --term-fg:#dde4ec; --term-muted:#8d9aa8;
+  --display:"Sora",system-ui,sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1419; --surface:#171d25; --surface-2:#1f2731; --line:#2f3a47; --fg:#e6ebf0; --muted:#98a4b2;
+  --agent:#3fbfa9; --agent-soft:#143a35; --human:#e0945a; --human-soft:#3d2a1a; --script:#8c9ef0; --script-soft:#232c4a;
+  --pass:#5fcf8a; --fail:#f2867e; --add:#5fcf8a; --del:#f2867e; --term:#0b0f14; --term-fg:#dde4ec; --term-muted:#7d8a98; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0f1419; --surface:#171d25; --surface-2:#1f2731; --line:#2f3a47; --fg:#e6ebf0; --muted:#98a4b2;
+  --agent:#3fbfa9; --agent-soft:#143a35; --human:#e0945a; --human-soft:#3d2a1a; --script:#8c9ef0; --script-soft:#232c4a;
+  --pass:#5fcf8a; --fail:#f2867e; --add:#5fcf8a; --del:#f2867e; --term:#0b0f14; --term-fg:#dde4ec; --term-muted:#7d8a98; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+.wrap{max-width:1000px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+h1{font-size:clamp(26px,4vw,38px);font-weight:700;line-height:1.12}
+h2{font-size:21px;font-weight:600}
+h3{font-size:15px;font-weight:600}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+header{padding:36px 0 18px;display:grid;gap:10px}
+.lede{color:var(--muted);max-width:68ch}
+section{padding:30px 0 0;display:grid;gap:14px}
+.sub{color:var(--muted);max-width:70ch}
+
+.legend{display:flex;flex-wrap:wrap;gap:8px}
+.who{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11.5px;font-weight:500;padding:3px 9px;border-radius:3px;white-space:nowrap}
+.who::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.you{background:var(--human-soft);color:var(--human)}
+.agent{background:var(--agent-soft);color:var(--agent)}
+.script{background:var(--script-soft);color:var(--script)}
+
+.roles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.role{background:var(--surface);border:1px solid var(--line);padding:14px;display:grid;gap:6px;align-content:start;min-width:0}
+.role p{font-size:13.5px;color:var(--muted)}
+
+.prelude{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+
+.run{background:var(--surface);border:1px solid var(--line);padding:20px 20px 8px}
+.runhead{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:baseline;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.runhead .meta{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.goal{font-size:14px;color:var(--muted);max-width:70ch;margin-top:4px}
+.steps{list-style:none;margin:0;padding:6px 0 0}
+.step{display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px;padding:14px 0;position:relative}
+.step::before{content:"";position:absolute;left:16px;top:44px;bottom:-14px;width:2px;background:var(--line)}
+.step:last-child::before{display:none}
+.num{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:12px;font-weight:500;background:var(--surface-2);color:var(--fg);border:2px solid var(--line);position:relative;z-index:1}
+.step.h .num{border-color:var(--human);color:var(--human)}
+.step.a .num{border-color:var(--agent);color:var(--agent)}
+.step.s .num{border-color:var(--script);color:var(--script)}
+.body{display:grid;gap:8px;min-width:0}
+.stitle{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.stitle h3{margin-right:4px}
+.body > p{font-size:14px;color:var(--muted);max-width:72ch}
+
+.term{background:var(--term);color:var(--term-fg);font-family:var(--mono);font-size:12.5px;line-height:1.6;padding:12px 14px;overflow-x:auto;white-space:pre;border-radius:4px}
+.term .c{color:var(--term-muted)}
+.term .ok{color:#6fd39b}
+.term .bad{color:#f4948c}
+.term .add{color:#6fd39b}
+.term .del{color:#f4948c}
+.note{background:var(--surface-2);border-left:3px solid var(--agent);padding:12px 14px;font-size:14.5px;max-width:74ch}
+.note h4{font-family:var(--display);font-size:14px;margin:0 0 6px}
+.crit{display:grid;gap:6px}
+.ac{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:start;font-size:13.5px;background:var(--surface-2);padding:8px 10px}
+.ac b{font-family:var(--mono);font-weight:500}
+.ac .ev{grid-column:2 / 4;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.tick{font-family:var(--mono);font-size:11px;color:var(--pass);font-weight:500;white-space:nowrap}
+.tablewrap{overflow-x:auto;border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:560px}
+th,td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface-2);font-weight:500}
+tr:last-child td{border-bottom:0}
+td.m{font-family:var(--mono);font-size:12px}
+
+.spend{display:grid;gap:8px}
+.bar{display:flex;height:26px;border-radius:3px;overflow:hidden;font-family:var(--mono);font-size:11px}
+.bar span{display:flex;align-items:center;padding:0 8px;white-space:nowrap;overflow:hidden;color:var(--bg)}
+.bar .m{background:var(--fg)} .bar .b{background:var(--agent)} .bar .r{background:var(--script)}
+.bar span{min-width:0}
+.keys{display:flex;flex-wrap:wrap;gap:14px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.keys i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+
+.outcome{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--line);padding:14px 16px;min-width:0}
+.kpi .n{font-family:var(--display);font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi .l{font-size:13px;color:var(--muted);margin-top:2px}
+footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);font-family:var(--mono);font-size:12px;color:var(--muted)}
+@media (max-width:760px){ .roles{grid-template-columns:repeat(2,minmax(0,1fr))} .prelude,.outcome{grid-template-columns:1fr} .run{padding:16px 14px 6px} }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">geevs-agent-team 1.2.0 · live run · 29 Oct 2026 · sandbox FX fee project</div>
+  <h1>How the agent team handled two real tasks</h1>
+  <p class="lede">A Claude Code session ran the plugin end to end on a small FX fee calculator: one bug fix and one customer-facing document. Everything below is the actual output, read from the run folders and git history afterwards.</p>
+  <div class="legend"><span class="who you">you</span><span class="who agent">agent</span><span class="who script">script check</span></div>
+</header>
+
+<section aria-label="Outcome">
+  <div class="outcome">
+    <div class="kpi"><div class="n">2 / 2</div><div class="l">tasks reached release, each in one review round</div></div>
+    <div class="kpi"><div class="n">2 decisions</div><div class="l">per task for the human: approve the spec, then release</div></div>
+    <div class="kpi"><div class="n">$0.52 · $0.48</div><div class="l">estimated usage per task, about 4½ minutes each</div></div>
+  </div>
+</section>
+
+<section>
+  <h2>Who did what</h2>
+  <div class="roles">
+    <div class="role"><span class="who you">you</span><h3>Approve and release</h3><p>Answer the interview, approve the spec, then push or merge the result.</p></div>
+    <div class="role"><span class="who agent">main session</span><h3>Run the process</h3><p>Interviews, writes the spec, briefs the agents and runs the checks.</p></div>
+    <div class="role"><span class="who agent">builder · reviewer</span><h3>Do and check the work</h3><p>The builder works on its own branch. A separate reviewer checks every criterion and can't edit.</p></div>
+    <div class="role"><span class="who script">scripts and hooks</span><h3>Enforce</h3><p>Reject vague criteria, demand proof before release, and stop pushes or merges without you.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Before the runs</h2>
+  <div class="prelude">
+    <div class="run" style="padding-bottom:16px">
+      <div class="stitle"><span class="who script">setup</span><h3>Project opted in</h3></div>
+<div class="term" style="margin-top:10px">/geevs-agent-team:setup
+<span class="c">{"rules_added": 24, "excludes_added": 1, ...}</span>
+marker: {"version": "1.2.0"}
+git status --porcelain   <span class="ok"># empty: nothing to commit</span></div>
+    </div>
+    <div class="run" style="padding-bottom:16px">
+      <div class="stitle"><span class="who script">rule check</span><h3>Vague criteria refused</h3></div>
+<div class="term" style="margin-top:10px"><span class="c"># spec criterion with no check:</span>
+- [ ] AC1: it works
+run_state criteria rule-check
+<span class="bad">error: criteria must name their check in backticks: AC1</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Task 1: bug fix</h2>
+  <div class="run">
+    <div class="runhead">
+      <div><h3>fix-tier-boundaries</h3><p class="goal">"Transfers of exactly 1,000 and exactly 10,000 GBP are charged the lower-volume tier; per the README pricing table they should get the higher-volume tier."</p></div>
+      <div class="meta">19:08:59 → 19:13:26 · 1 review · budget $5</div>
+    </div>
+    <ol class="steps">
+      <li class="step h"><div class="num">1</div><div class="body">
+        <div class="stitle"><h3>Interview</h3><span class="who you">you</span></div>
+        <p>Audience: internal callers. Constraint: standard library only. Done: the boundary fees match the table and all tests pass.</p>
+      </div></li>
+      <li class="step a"><div class="num">2</div><div class="body">
+        <div class="stitle"><h3>Spec with checkable criteria</h3><span class="who agent">main session</span><span class="who script">accepted</span></div>
+        <p>The reproduction showed the bug before any change: <code>transfer_fee(1000)</code> gave 10.00 and <code>transfer_fee(10000)</code> gave 50.00, where the table says 5.00 and 25.00.</p>
+        <div class="crit">
+          <div class="ac"><b>AC1</b><span>The reproduction prints 5.00 25.00</span><span class="tick">✓ passed</span><span class="ev">repro in worktree prints '5.00 25.00'</span></div>
+          <div class="ac"><b>AC2</b><span>New tests for 1,000 → 5.00 and 10,000 → 25.00 fail on the old code</span><span class="tick">✓ passed</span><span class="ev">against main: 2 failures, 10.00 != 5.00 and 50.00 != 25.00; pass on fix</span></div>
+          <div class="ac"><b>AC3</b><span>Just below each threshold keeps the lower tier</span><span class="tick">✓ passed</span><span class="ev">999.99 and 9999.99 print '10.00 50.00'</span></div>
+          <div class="ac"><b>AC4</b><span>The full test suite passes</span><span class="tick">✓ passed</span><span class="ev">Ran 7 tests OK</span></div>
+          <div class="ac"><b>AC5</b><span>Only fx/fees.py and tests/test_fees.py change</span><span class="tick">✓ passed</span><span class="ev">git diff --name-only: fx/fees.py, tests/test_fees.py</span></div>
+        </div>
+      </div></li>
+      <li class="step h"><div class="num">3</div><div class="body">
+        <div class="stitle"><h3>Spec approved</h3><span class="who you">you</span></div>
+        <p>Nothing is built until this point.</p>
+      </div></li>
+      <li class="step a"><div class="num">4</div><div class="body">
+        <div class="stitle"><h3>Build on its own branch</h3><span class="who agent">builder · Sonnet</span></div>
+        <p>A one-character fix, plus three tests. It was committed as <code>bdf5588</code> on <code>fix/tier-boundaries</code>, in a separate worktree.</p>
+<div class="term"><span class="c">fx/fees.py</span>
+ def tier_rate(amount: Decimal) -&gt; Decimal:
+     for threshold, rate in TIERS:
+<span class="del">-        if amount &gt; threshold:</span>
+<span class="add">+        if amount &gt;= threshold:</span>
+             return rate
+
+<span class="c">tests/test_fees.py</span>
+<span class="add">+    def test_lower_boundary_uses_mid_tier(self):
++        self.assertEqual(transfer_fee(Decimal("1000")), Decimal("5.00"))
++    def test_upper_boundary_uses_high_tier(self):
++        self.assertEqual(transfer_fee(Decimal("10000")), Decimal("25.00"))
++    def test_just_below_boundaries_keep_lower_tier(self):
++        self.assertEqual(transfer_fee(Decimal("999.99")), Decimal("10.00"))
++        self.assertEqual(transfer_fee(Decimal("9999.99")), Decimal("50.00"))</span></div>
+      </div></li>
+      <li class="step a"><div class="num">5</div><div class="body">
+        <div class="stitle"><h3>Independent review</h3><span class="who agent">reviewer · Sonnet</span></div>
+        <p>The reviewer checked all five criteria and recorded the evidence above. The working tree was confirmed unchanged afterwards.</p>
+      </div></li>
+      <li class="step s"><div class="num">6</div><div class="body">
+        <div class="stitle"><h3>Proof before release</h3><span class="who script">run_state</span></div>
+<div class="term">run_state check fix-tier-boundaries
+<span class="bad">error: proof missing or out of date: test-first (redgreen)</span>
+
+run_state redgreen fix-tier-boundaries &lt;worktree&gt; -- python3 -m unittest discover -s tests
+<span class="c">new tests on the OLD code:</span>  red_exit 1   <span class="ok"># they fail, so they catch the bug</span>
+<span class="c">new tests on the FIX:</span>       green_exit 0 <span class="ok"># they pass</span>
+
+run_state check fix-tier-boundaries
+<span class="ok">all criteria pass with proofs</span></div>
+      </div></li>
+      <li class="step h"><div class="num">7</div><div class="body">
+        <div class="stitle"><h3>Release</h3><span class="who you">you</span></div>
+        <p>Claude handed over the branch, the evidence for each criterion, and no open risks. Pushing and merging stay with you: the project's rules ask before either. In the test, <code>main</code> stayed at <code>8dc51af</code>.</p>
+      </div></li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <h2>Task 2: customer note</h2>
+  <div class="run">
+    <div class="runhead">
+      <div><h3>customer-fee-note</h3><p class="goal">"Write a one-paragraph customer note explaining the minimum fee and rounding rule, with one worked example, citing the README. Avoid exactly 1,000 and 10,000 GBP."</p></div>
+      <div class="meta">19:13:35 → 19:18:01 · 1 review · budget $5</div>
+    </div>
+    <ol class="steps">
+      <li class="step h"><div class="num">1</div><div class="body">
+        <div class="stitle"><h3>Interview and approval</h3><span class="who you">you</span></div>
+        <p>Audience: retail customers. Source: the README only. Done: every figure traced to a README line. The spec had six criteria and was approved before writing started.</p>
+      </div></li>
+      <li class="step a"><div class="num">2</div><div class="body">
+        <div class="stitle"><h3>Draft on its own branch</h3><span class="who agent">builder · Sonnet</span></div>
+        <div class="note"><h4>Minimum fee and rounding</h4>Every transfer has a minimum fee of 2.00 GBP, and fees round half-up to 2 decimals (README.md, line 21). For example, on a transfer of 100 GBP the rate is 1.0% (README.md, line 18), which would be 1.00 GBP, but because that is below the minimum, the fee is 2.00 GBP (README.md, line 21).</div>
+      </div></li>
+      <li class="step a"><div class="num">3</div><div class="body">
+        <div class="stitle"><h3>Review: every claim to its source</h3><span class="who agent">reviewer · Sonnet</span></div>
+        <div class="tablewrap"><table>
+          <thead><tr><th>Claim in the note</th><th>Source</th><th>Exact text there</th></tr></thead>
+          <tbody>
+            <tr><td>Every transfer has a minimum fee of 2.00 GBP</td><td class="m">README.md:21</td><td class="m">Minimum fee 2.00 GBP.</td></tr>
+            <tr><td>fees round half-up to 2 decimals</td><td class="m">README.md:21</td><td class="m">Fees round half-up to 2 decimals.</td></tr>
+            <tr><td>on a transfer of 100 GBP the rate is 1.0%</td><td class="m">README.md:18</td><td class="m">| under 1,000 | 1.0% |</td></tr>
+            <tr><td>which would be 1.00 GBP</td><td class="m">README.md:18</td><td class="m">| under 1,000 | 1.0% |</td></tr>
+            <tr><td>because that is below the minimum, the fee is 2.00 GBP</td><td class="m">README.md:21</td><td class="m">Minimum fee 2.00 GBP.</td></tr>
+          </tbody>
+        </table></div>
+      </div></li>
+      <li class="step s"><div class="num">4</div><div class="body">
+        <div class="stitle"><h3>Proof before release</h3><span class="who script">run_state</span></div>
+<div class="term">run_state claims customer-fee-note &lt;worktree&gt; claims.json
+<span class="ok">ok: 5 claims, no problems</span>   <span class="c"># each claim in the note, each quote on its line, every number covered</span>
+
+<span class="c"># the same check with the worked-example claim deleted:</span>
+<span class="bad">error: docs proof failed: number 1.0 has no sourced claim; number 100 has no sourced claim;
+       number 18 has no sourced claim</span>
+
+run_state check customer-fee-note
+<span class="ok">all criteria pass with proofs</span></div>
+      </div></li>
+      <li class="step h"><div class="num">5</div><div class="body">
+        <div class="stitle"><h3>Release</h3><span class="who you">you</span></div>
+        <p>The note was handed over on <code>docs/customer-fee-note</code> at commit <code>c8b340e</code>. Nothing was sent or published.</p>
+      </div></li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <h2>Where the usage went</h2>
+  <p class="sub">Estimated from the token counts in each transcript, priced at published rates. Both agents ran on Sonnet. Most usage is the main session, which ran on Opus here.</p>
+  <div class="spend">
+    <div class="stitle"><h3>Bug fix · $0.52</h3></div>
+    <div class="bar" role="img" aria-label="Bug fix: main session 0.40, builder 0.06, reviewer 0.05 dollars">
+      <span class="m" style="flex:0.4047">main $0.40</span><span class="b" style="flex:0.0585">$0.06</span><span class="r" style="flex:0.053">$0.05</span>
+    </div>
+    <div class="stitle"><h3>Customer note · $0.48</h3></div>
+    <div class="bar" role="img" aria-label="Customer note: main session 0.35, builder 0.08, reviewer 0.05 dollars">
+      <span class="m" style="flex:0.353">main $0.35</span><span class="b" style="flex:0.0805">$0.08</span><span class="r" style="flex:0.0479">$0.05</span>
+    </div>
+    <div class="keys"><span><i style="background:var(--fg)"></i>main session (Opus)</span><span><i style="background:var(--agent)"></i>builder (Sonnet)</span><span><i style="background:var(--script)"></i>reviewer (Sonnet)</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>What this run showed, and what it didn't</h2>
+  <div class="prelude">
+    <div class="run" style="padding-bottom:16px"><h3>Showed</h3>
+      <ul style="margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:14px">
+        <li>The human made two decisions per task. Everything else ran on its own.</li>
+        <li>Release was refused until the proof ran, for both code and the document.</li>
+        <li>The tests demonstrably caught the bug: they failed before the fix and passed after.</li>
+        <li>A missing source for a figure was caught by name.</li>
+      </ul></div>
+    <div class="run" style="padding-bottom:16px"><h3>Didn't show</h3>
+      <ul style="margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:14px">
+        <li>Real Geevs work: these are small sandbox tasks.</li>
+        <li>A comparison with doing the same tasks in a normal chat.</li>
+        <li>That the figure 1.00 was correct. The 1.2.0 proof accepted it without checking the arithmetic. Fixed in 1.2.1, which now recomputes derived figures.</li>
+      </ul></div>
+  </div>
+</section>
+
+<footer>Source: sandbox run folders .agents/runs/fix-tier-boundaries and customer-fee-note, git history, spend.jsonl · Full log: reports/live-test-1.2.0.md</footer>
+</div>
