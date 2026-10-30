@@ -1,6 +1,6 @@
 # Try the agent team yourself
 
-A step-by-step test on a small practice project, so nothing real is touched. About 30 minutes and about $1 of usage for both tasks. Nothing goes out: everything stays on your computer.
+A step-by-step test, so nothing real is touched. For a normal chat, go straight to Part 7. About 30 minutes and about $1 of usage for both tasks. Nothing goes out: everything stays on your computer.
 
 ## Before you start
 - The Claude desktop app, with the **Code** tab.
@@ -38,19 +38,14 @@ Type `/geevs-agent-team:setup`. Claude confirms the safety rules were added: it 
 ## Part 6: Try something of your own
 Use a copy of a real project folder. Repeat Part 3 there, then type `/geevs-agent-team:deliver` followed by what you want.
 
-## Part 7: Use it in a normal chat and in Cowork
-1. In Claude, open **Customize → Plugins → Add → Add marketplace** and enter `Dolat-Hamza/geevs-ai-skills`. If asked, connect GitHub and allow the Claude GitHub App to see that repository.
-2. Add **geevs-agent-team**. Check **Settings → Capabilities → Code execution and file creation** is on.
-3. In a new chat, type `/deliver`, pick **geevs-agent-team: deliver**, and paste your request. You get the same steps as in Code, and the same proof script runs before handover.
-
-| | Claude Code | Cowork | Chat |
-|---|---|---|---|
-| Questions, checklist you approve, handover | Yes | Yes | Yes |
-| Proof script: tests fail then pass, every figure traced | Yes, required | Yes | Yes, in Claude's sandbox |
-| Separate builder and checker | Yes | Yes | No: one Claude switches role |
-| Budget limit, asks before pushing | Yes | Not tested yet | No |
-
-Already installed it in Code in Part 1? Code keeps using that copy.
+## Part 7: Use it in a normal chat
+Doesn't need Parts 1 to 6.
+1. Signed in to GitHub, open https://github.com/Dolat-Hamza/geevs-ai-skills/raw/master/dist/geevs-agent-team.zip. Don't unzip it.
+2. In Claude: **Customize → Plugins → Add → Upload plugin**, pick **geevs-agent-team.zip**. Its Skills tab shows **deliver** and **setup**.
+3. **Settings → Capabilities**: **Code execution and file creation** on.
+4. New chat, paste: "Use the geevs-agent-team deliver skill: write a short FAQ answer explaining our minimum fee and rounding, with worked examples for 250.50 GBP and 150.00 GBP. Price list: Under 1,000 GBP: 1.0%. 1,000 to under 10,000 GBP: 0.5%. 10,000 GBP and above: 0.25%. Minimum fee 2.00 GBP. Fees round half-up to 2 decimals, then the minimum applies." Answer its questions, reply **approved** to the checklist.
+5. Good result: the checker says `"ok": true`; fees 2.51 GBP and 2.00 GBP.
+6. Reply "Change the 250.50 example to say the fee is 2.52 GBP and re-run the check." Good result: `"ok": false`, or Claude refuses.
 
 ## What's normal
 | You notice | What it means |
@@ -76,4 +71,4 @@ Already installed it in Code in Part 1? Code keeps using that copy.
 - Was anything confusing?
 
 ## Removing it
-Chat and Cowork version: Customize → Plugins → geevs-agent-team → Remove. Code version: paste into a Code session `Please run: claude plugin uninstall geevs-agent-team@geevs`, then restart the app. Delete the practice folder from your Desktop.
+Chat version: Customize → Plugins → geevs-agent-team → Remove. Code version: paste into a Code session `Please run: claude plugin uninstall geevs-agent-team@geevs`, then restart the app. Delete the practice folder from your Desktop.

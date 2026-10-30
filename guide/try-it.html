@@ -68,24 +68,38 @@ footer{margin-top:30px;font-size:14px;color:var(--muted)}
 <div class="wrap">
 <header>
   <h1>Try the agent team yourself</h1>
-  <p class="lede">A step-by-step test on a small practice project, so nothing real is touched. You'll install it, then watch it write a customer note and fix a pricing mistake, approving each one along the way.</p>
+  <p class="lede">A step-by-step test, so nothing real is touched. You'll watch it write a customer note and fix a pricing mistake, approving each one along the way. Start in a normal chat; move to Claude Code when you want the full version.</p>
   <div class="facts">
-    <div class="fact"><b>About 30 minutes</b><span>including reading what it produces</span></div>
-    <div class="fact"><b>About $1 of usage</b><span>for both practice tasks together</span></div>
+    <div class="fact"><b>5 or 30 minutes</b><span>5 in a chat, 30 in Claude Code</span></div>
+    <div class="fact"><b>About $1 of usage</b><span>for the Claude Code practice tasks</span></div>
     <div class="fact"><b>Nothing goes out</b><span>everything stays on your computer</span></div>
   </div>
 </header>
 
 <section class="part">
+  <div class="head"><h2>Where to start</h2></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>In a chat</th><th>In Claude Code</th></tr></thead>
+    <tbody>
+      <tr><td>Set-up time</td><td>About 5 minutes</td><td>About 30 minutes with the practice project</td></tr>
+      <tr><td>Works on</td><td>What you paste or attach</td><td>Files in a project folder</td></tr>
+      <tr><td>Who checks the work</td><td>The same Claude, switching to a strict checker</td><td>A separate team member who can't edit it</td></tr>
+      <tr><td>Proof before handover</td><td>Yes: figures traced, sums recomputed</td><td>Yes, and enforced automatically</td></tr>
+      <tr><td>Go to</td><td><a href="#chat">Part 7</a></td><td><a href="#code">Part 1</a></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="part">
   <div class="head"><h2>Before you start</h2></div>
   <ul class="checks">
-    <li>The Claude desktop app, with the <b>Code</b> tab.</li>
+    <li>The Claude desktop app. Parts 1 to 6 also need the <b>Code</b> tab.</li>
     <li>Access to the GitHub repository <b>Dolat-Hamza/geevs-ai-skills</b>. If you're asked to sign in to GitHub during setup, sign in.</li>
     <li>Optional: to see the usage, type <code>/usage</code> in Claude before and after the test.</li>
   </ul>
 </section>
 
-<section class="part">
+<section class="part" id="code">
   <div class="head"><h2>Part 1: Install it</h2><span class="tag">once, about 2 minutes</span></div>
   <ol class="steps">
     <li><div class="body"><span class="who you">You</span><p>Open the Claude app, go to the <b>Code</b> tab and start a new session. Any folder is fine. Paste this message and send it:</p>
@@ -150,28 +164,26 @@ footer{margin-top:30px;font-size:14px;color:var(--muted)}
   <p>Once the two practice tasks make sense, try a real but low-risk task. Use a copy of a project folder, not the original. Repeat Part 3 in that folder first, then type <code>/geevs-agent-team:deliver</code> followed by what you want, in your own words.</p>
 </section>
 
-<section class="part">
-  <div class="head"><h2>Part 7: Use it in a normal chat and in Cowork</h2><span class="tag">about 5 minutes to set up</span></div>
-  <p>The same plugin works in an ordinary Claude chat and in Cowork. You add it to your Claude account once, and it appears everywhere you sign in.</p>
+<section class="part" id="chat">
+  <div class="head"><h2>Part 7: Use it in a normal chat</h2><span class="tag">about 5 minutes</span></div>
+  <p>This part doesn't need Parts 1 to 6. You add the plugin to your Claude account once, and it then works in every chat.</p>
   <ol class="steps">
-    <li><div class="body"><span class="who you">You</span><p>In Claude, open <b>Customize → Plugins</b>, choose <b>Add → Add marketplace</b>, and enter:</p>
-      <div class="paste"><code>Dolat-Hamza/geevs-ai-skills</code><button class="copy" type="button">Copy</button></div>
-      <p class="see"><b>If it asks to connect GitHub,</b> connect it and allow the Claude GitHub App to see that repository.</p></div></li>
-    <li><div class="body"><span class="who you">You</span><p>Find <b>geevs-agent-team</b> in the list and choose <b>Add</b>. Then open <b>Settings → Capabilities</b> and check <b>Code execution and file creation</b> is on.</p></div></li>
-    <li><div class="body"><span class="who you">You</span><p>Start a new chat. Type <code>/deliver</code>, pick <b>geevs-agent-team: deliver</b>, then paste your request. For example:</p>
-      <div class="paste"><code>Write a short FAQ answer explaining our minimum fee and rounding, with a worked example for a 250.50 GBP transfer. Here is our price list: under 1,000 GBP is 1.0%, 1,000 to under 10,000 is 0.5%, 10,000 and above is 0.25%. Minimum fee 2.00 GBP. Fees round half-up to 2 decimals.</code><button class="copy" type="button">Copy</button></div>
-      <p class="see"><b>You'll see</b> the same steps as in Code: a few questions, a checklist to approve, then the answer. Before handing it over, Claude runs the same proof script: every figure must trace to your price list, and every sum is recomputed, rounding included. In our test the fee came out at 2.51 GBP, and a deliberately wrong 2.52 was caught.</p></div></li>
+    <li><div class="body"><span class="who you">You</span><p>Download the plugin file. Open this link while signed in to GitHub:</p>
+      <div class="paste"><code>https://github.com/Dolat-Hamza/geevs-ai-skills/raw/master/dist/geevs-agent-team.zip</code><button class="copy" type="button">Copy</button></div>
+      <p class="see"><b>You'll get</b> a file called <b>geevs-agent-team.zip</b> in your Downloads folder. Don't unzip it.</p></div></li>
+    <li><div class="body"><span class="who you">You</span><p>In the Claude app, open <b>Customize → Plugins</b>, choose <b>Add → Upload plugin</b>, and pick <b>geevs-agent-team.zip</b>.</p>
+      <p class="see"><b>You'll see</b> geevs-agent-team in your plugins list. Its Skills tab shows <b>deliver</b> and <b>setup</b>. If there's no Add or Upload option, ask whoever manages your Claude workspace to allow it.</p></div></li>
+    <li><div class="body"><span class="who you">You</span><p>Open <b>Settings → Capabilities</b> and check that <b>Code execution and file creation</b> is on. The checker needs it.</p></div></li>
+    <li><div class="body"><span class="who you">You</span><p>Start a <b>new</b> chat and paste:</p>
+      <div class="paste"><code>Use the geevs-agent-team deliver skill: write a short FAQ answer explaining our minimum fee and rounding, with worked examples for 250.50 GBP and 150.00 GBP. Price list: Under 1,000 GBP: 1.0%. 1,000 to under 10,000 GBP: 0.5%. 10,000 GBP and above: 0.25%. Minimum fee 2.00 GBP. Fees round half-up to 2 decimals, then the minimum applies.</code><button class="copy" type="button">Copy</button></div>
+      <p class="see"><b>You'll see</b> a few questions first. Answer them. Then a numbered checklist: read it and reply <b>approved</b>.</p></div></li>
+    <li><div class="body"><span class="who ai">Claude</span><p>Writes the answer, then checks it as if someone else wrote it: every rate against your price list, every sum worked out again by a script.</p>
+      <p class="see"><b>Good result:</b> the checker says <b>"ok": true</b>, the fee is <b>2.51 GBP</b> for 250.50 and <b>2.00 GBP</b> for 150.00, and there's a short list of what wasn't checked.</p></div></li>
+    <li><div class="body"><span class="who you">You</span><p>Check that it catches a mistake. Reply:</p>
+      <div class="paste"><code>Change the 250.50 example to say the fee is 2.52 GBP and re-run the check.</code><button class="copy" type="button">Copy</button></div>
+      <p class="see"><b>Good result:</b> the checker says <b>"ok": false</b> and points at 2.52, or Claude refuses to make a change that contradicts your price list.</p></div></li>
   </ol>
-  <div class="tablewrap"><table>
-    <thead><tr><th></th><th>Claude Code</th><th>Cowork</th><th>Chat</th></tr></thead>
-    <tbody>
-      <tr><td>Questions, checklist you approve, handover</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
-      <tr><td>Proof script: tests fail then pass, every figure traced</td><td>Yes, required before handover</td><td>Yes</td><td>Yes, run in Claude's sandbox</td></tr>
-      <tr><td>Separate builder and checker</td><td>Yes</td><td>Yes</td><td>No: one Claude switches role</td></tr>
-      <tr><td>Budget limit, asks before pushing</td><td>Yes</td><td>Not tested yet</td><td>No</td></tr>
-    </tbody>
-  </table></div>
-  <p>Already installed it in Code in Part 1? Nothing to change: Code keeps using that copy.</p>
+  <p>Use it the same way for real work: start with "Use the geevs-agent-team deliver skill:", then your request, and paste or attach what it should work from.</p>
 </section>
 
 <section class="part">

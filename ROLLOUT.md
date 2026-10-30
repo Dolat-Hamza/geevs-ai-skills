@@ -12,6 +12,8 @@ Everyone then has it without installing anything. Pushing to `main` and pressing
 ## One person, any paid plan
 Customize → Plugins → **Add → Add marketplace** → `Dolat-Hamza/geevs-ai-skills`, then add **geevs-agent-team**.
 
+Or, without GitHub access in Claude: **Add → Upload plugin** with [dist/geevs-agent-team.zip](dist/geevs-agent-team.zip). Uploaded copies don't update; upload the new zip after each release.
+
 ## What runs where
 
 | | Chat | Cowork | Claude Code |
