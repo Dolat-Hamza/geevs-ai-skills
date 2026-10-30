@@ -38,6 +38,18 @@ Type `/geevs-agent-team:setup`. Claude confirms the safety rules were added: it 
 ## Part 6: Try something of your own
 Use a copy of a real project folder. Repeat Part 3 there, then type `/geevs-agent-team:deliver` followed by what you want.
 
+## Part 7: Use it in a normal chat too
+1. In a Code session, paste: "Copy the file chat/agent-team.zip from the GitHub repository Dolat-Hamza/geevs-ai-skills to my Desktop."
+2. In Claude, open **Settings → Capabilities → Skills**, choose **Upload skill**, pick **agent-team.zip**. If Skills isn't there, ask whoever manages your Claude workspace.
+3. Start a new chat with "Use the agent team:" followed by your request, and paste or attach the source material. You get the same flow: questions, a checklist to approve, then the answer with a check table.
+
+| | In Claude Code | In a chat |
+|---|---|---|
+| Who checks the work | A separate team member who can't edit it | The same Claude, switching to a strict reviewer |
+| Proof | Automatic checks must pass before handover | A written check: every item, source and sum shown |
+| Works on | Files in a project folder | What you paste or attach |
+| Best for | Code and project files | Documents, figures, checked answers |
+
 ## What's normal
 | You notice | What it means |
 |---|---|
@@ -62,4 +74,4 @@ Use a copy of a real project folder. Repeat Part 3 there, then type `/geevs-agen
 - Was anything confusing?
 
 ## Removing it
-Paste into a Code session: `Please run: claude plugin uninstall geevs-agent-team@geevs`, then restart the app. Delete the practice folder from your Desktop.
+Chat version: delete **agent-team** under Settings → Capabilities → Skills. Code version: paste into a Code session `Please run: claude plugin uninstall geevs-agent-team@geevs`, then restart the app. Delete the practice folder from your Desktop.
