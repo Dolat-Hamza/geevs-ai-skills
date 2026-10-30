@@ -6,6 +6,8 @@ argument-hint: <goal>
 
 # Deliver: $ARGUMENTS
 
+If you cannot spawn agents, as in a claude.ai chat, follow `chat.md` in this skill's directory instead of the steps below.
+
 Below, `RS` stands for `python3 <this skill's base directory>/../../scripts/run_state.py` written out with the absolute path. Run it from the project root. If `.claude/agent-team.local.json` is missing, run `/geevs-agent-team:setup` first.
 
 ## Cost rules

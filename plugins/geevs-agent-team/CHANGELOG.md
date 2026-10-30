@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0 — 2026-10-30
+- Chat mode: in a claude.ai chat, where agents and hooks don't load, `deliver` follows `chat.md`. Same gates; the proofs run as `scripts/chat_check.py` in the code sandbox on plain folders.
+- Calcs support `round(x, digits)` half-up, `max` and `min`, so rounded fees and minimums are recomputed instead of given.
+- A claim can cite several source lines (`file:1,4`) with one quote per line, so figures from two lines are both quoted. `given` accepts a single value.
+- One install for chat, Cowork and Claude Code through the claude.ai account or an organization; see `ROLLOUT.md`.
+
 ## 1.2.1 — 2026-10-29
 Fixes from the 1.2.0 live test.
 - Document proof checks derived numbers: each number in a claim must be on the quoted line, in `given`, or equal to its `calc`, which is recomputed exactly. In 1.2.0 a derived figure passed on any quote.

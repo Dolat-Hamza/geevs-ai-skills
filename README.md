@@ -13,6 +13,8 @@ See **[CATALOG.md](CATALOG.md)** for the full list with descriptions.
 
 **Trying the agent team?** Follow [TRY-IT.md](TRY-IT.md): a 30-minute, step-by-step test on [examples/practice-project](examples/practice-project).
 
+**Using chat or Cowork, or rolling it out to the team?** See [ROLLOUT.md](ROLLOUT.md).
+
 ## Repository layout
 
 ```

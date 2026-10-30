@@ -102,9 +102,11 @@ def numbers(text):
 
 
 def evaluate(node):
-    """Exact arithmetic over + - * / and numeric literals only."""
+    """Exact arithmetic over + - * /, round half-up, max, min and numeric literals only."""
     if isinstance(node, ast.Expression):
         return evaluate(node.body)
+    if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and not node.keywords:
+        return call(node.func.id, node.args)
     if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
         return decimal.Decimal(str(node.value))
     if isinstance(node, ast.BinOp) and type(node.op) in OPS:
@@ -114,9 +116,38 @@ def evaluate(node):
     raise ValueError("only numbers and + - * / are allowed")
 
 
+def call(name, args):
+    if name == "round" and len(args) == 2 and isinstance(args[1], ast.Constant) and type(args[1].value) is int:
+        step = decimal.Decimal(1).scaleb(-args[1].value)
+        return evaluate(args[0]).quantize(step, rounding=decimal.ROUND_HALF_UP)
+    if name in ("max", "min") and len(args) >= 2:
+        return (max if name == "max" else min)(evaluate(a) for a in args)
+    raise ValueError("only round(x, digits), max and min are allowed")
+
+
+def round_digits(calc):
+    """Digit counts in round() calls, which are not figures needing a source."""
+    try:
+        tree = ast.parse(calc, mode="eval")
+    except SyntaxError:
+        return set()
+    return {
+        str(n.args[1].value)
+        for n in ast.walk(tree)
+        if isinstance(n, ast.Call) and getattr(n.func, "id", "") == "round" and len(n.args) == 2
+        and isinstance(n.args[1], ast.Constant)
+    }
+
+
+def as_list(value):
+    if value is None:
+        return []
+    return [str(v) for v in value] if isinstance(value, list) else [str(value)]
+
+
 def support_problems(i, claim):
     """Numbers in a claim must be quoted, declared as given inputs, or the result of its calc."""
-    allowed = numbers(claim.get("quote")) | numbers(" ".join(map(str, claim.get("given", []))))
+    allowed = numbers(" ".join(as_list(claim.get("quote")))) | numbers(" ".join(as_list(claim.get("given"))))
     unsupported = numbers(claim.get("claim")) - allowed
     if not unsupported:
         return []
@@ -128,7 +159,7 @@ def support_problems(i, claim):
         return [f"claim {i}: calc not valid: {error}"]
     problems = [
         f"claim {i}: calc uses {n}, which is not quoted or given"
-        for n in numbers(str(claim["calc"])) - allowed - {PERCENT_BASE}
+        for n in numbers(str(claim["calc"])) - allowed - {PERCENT_BASE} - round_digits(str(claim["calc"]))
     ]
     problems += [
         f"claim {i}: {n} does not match calc result {result}"
@@ -145,19 +176,22 @@ def claim_problems(path, claims):
         source = pathlib.Path(path) / claim.get("source", "").split(":")[0]
         if not target.is_file() or normalise(claim.get("claim", "")) not in normalise(target.read_text()):
             problems.append(f"claim {i}: text not found in {claim.get('file')}")
-        if not source.is_file() or normalise(claim.get("quote", "")) not in normalise(source_text(source, claim)):
+        cited = normalise(source_text(source, claim)) if source.is_file() else None
+        quotes = as_list(claim.get("quote")) or [""]
+        if cited is None or any(normalise(q) not in cited for q in quotes):
             problems.append(f"claim {i}: quote not found at {claim.get('source')}")
         problems += support_problems(i, claim)
     return problems
 
 
 def source_text(source, claim):
-    """The cited line when the source is file:line, otherwise the whole file."""
+    """The cited lines when the source is file:line[,line], otherwise the whole file."""
     lines = source.read_text().splitlines()
-    _, _, line = claim.get("source", "").partition(":")
-    if not line:
+    _, _, cited = claim.get("source", "").partition(":")
+    if not cited:
         return "\n".join(lines)
-    return lines[int(line) - 1] if line.isdigit() and 0 < int(line) <= len(lines) else ""
+    picked = [lines[int(n) - 1] for n in cited.split(",") if n.strip().isdigit() and 0 < int(n) <= len(lines)]
+    return "\n".join(picked) if len(picked) == len(cited.split(",")) else ""
 
 
 def uncovered_numbers(path, claims):

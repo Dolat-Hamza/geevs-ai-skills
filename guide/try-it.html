@@ -151,26 +151,27 @@ footer{margin-top:30px;font-size:14px;color:var(--muted)}
 </section>
 
 <section class="part">
-  <div class="head"><h2>Part 7: Use it in a normal chat too</h2><span class="tag">about 5 minutes to set up</span></div>
-  <p>The same process works in an ordinary Claude chat, which is handy for documents, figures and checked answers. Set it up once:</p>
+  <div class="head"><h2>Part 7: Use it in a normal chat and in Cowork</h2><span class="tag">about 5 minutes to set up</span></div>
+  <p>The same plugin works in an ordinary Claude chat and in Cowork. You add it to your Claude account once, and it appears everywhere you sign in.</p>
   <ol class="steps">
-    <li><div class="body"><span class="who you">You</span><p>In a Code session, paste this to get the chat version onto your Desktop:</p>
-      <div class="paste"><code>Copy the file chat/agent-team.zip from the GitHub repository Dolat-Hamza/geevs-ai-skills to my Desktop.</code><button class="copy" type="button">Copy</button></div></div></li>
-    <li><div class="body"><span class="who you">You</span><p>In Claude, open <b>Settings → Capabilities → Skills</b>, choose <b>Upload skill</b>, and pick <b>agent-team.zip</b> from your Desktop.</p>
-      <p class="see"><b>If you don't see Skills there,</b> it may need switching on for your account. Ask whoever manages your Claude workspace.</p></div></li>
-    <li><div class="body"><span class="who you">You</span><p>Start a new chat. Begin your message with "Use the agent team:", then paste or attach what it should work from. For example:</p>
-      <div class="paste"><code>Use the agent team: write a short FAQ answer explaining our minimum fee and rounding, with a worked example for a 250.50 GBP transfer. Here is our price list: under 1,000 GBP is 1.0%, 1,000 to under 10,000 is 0.5%, 10,000 and above is 0.25%. Minimum fee 2.00 GBP. Fees round half-up to 2 decimals.</code><button class="copy" type="button">Copy</button></div>
-      <p class="see"><b>You'll see</b> the same flow: a few questions, a checklist to approve, then the answer with a check table showing every figure and where it came from. In our test, the fee came out at 2.51 GBP, correctly rounded.</p></div></li>
+    <li><div class="body"><span class="who you">You</span><p>In Claude, open <b>Customize → Plugins</b>, choose <b>Add → Add marketplace</b>, and enter:</p>
+      <div class="paste"><code>Dolat-Hamza/geevs-ai-skills</code><button class="copy" type="button">Copy</button></div>
+      <p class="see"><b>If it asks to connect GitHub,</b> connect it and allow the Claude GitHub App to see that repository.</p></div></li>
+    <li><div class="body"><span class="who you">You</span><p>Find <b>geevs-agent-team</b> in the list and choose <b>Add</b>. Then open <b>Settings → Capabilities</b> and check <b>Code execution and file creation</b> is on.</p></div></li>
+    <li><div class="body"><span class="who you">You</span><p>Start a new chat. Type <code>/deliver</code>, pick <b>geevs-agent-team: deliver</b>, then paste your request. For example:</p>
+      <div class="paste"><code>Write a short FAQ answer explaining our minimum fee and rounding, with a worked example for a 250.50 GBP transfer. Here is our price list: under 1,000 GBP is 1.0%, 1,000 to under 10,000 is 0.5%, 10,000 and above is 0.25%. Minimum fee 2.00 GBP. Fees round half-up to 2 decimals.</code><button class="copy" type="button">Copy</button></div>
+      <p class="see"><b>You'll see</b> the same steps as in Code: a few questions, a checklist to approve, then the answer. Before handing it over, Claude runs the same proof script: every figure must trace to your price list, and every sum is recomputed, rounding included. In our test the fee came out at 2.51 GBP, and a deliberately wrong 2.52 was caught.</p></div></li>
   </ol>
   <div class="tablewrap"><table>
-    <thead><tr><th></th><th>In Claude Code</th><th>In a chat</th></tr></thead>
+    <thead><tr><th></th><th>Claude Code</th><th>Cowork</th><th>Chat</th></tr></thead>
     <tbody>
-      <tr><td>Who checks the work</td><td>A separate team member who can't edit it</td><td>The same Claude, switching to a strict reviewer</td></tr>
-      <tr><td>Proof</td><td>Automatic checks must pass before handover</td><td>A written check: every item, source and sum shown</td></tr>
-      <tr><td>Works on</td><td>Files in a project folder</td><td>What you paste or attach</td></tr>
-      <tr><td>Best for</td><td>Code and project files</td><td>Documents, figures, checked answers</td></tr>
+      <tr><td>Questions, checklist you approve, handover</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+      <tr><td>Proof script: tests fail then pass, every figure traced</td><td>Yes, required before handover</td><td>Yes</td><td>Yes, run in Claude's sandbox</td></tr>
+      <tr><td>Separate builder and checker</td><td>Yes</td><td>Yes</td><td>No: one Claude switches role</td></tr>
+      <tr><td>Budget limit, asks before pushing</td><td>Yes</td><td>Not tested yet</td><td>No</td></tr>
     </tbody>
   </table></div>
+  <p>Already installed it in Code in Part 1? Nothing to change: Code keeps using that copy.</p>
 </section>
 
 <section class="part">
@@ -218,7 +219,7 @@ footer{margin-top:30px;font-size:14px;color:var(--muted)}
   <p>The practice folder on your Desktop can simply be deleted.</p>
 </section>
 
-<footer>For geevs-agent-team 1.2.1 · practice project and plugin in github.com/Dolat-Hamza/geevs-ai-skills</footer>
+<footer>For geevs-agent-team 1.3.0 · practice project and plugin in github.com/Dolat-Hamza/geevs-ai-skills</footer>
 </div>
 
 <script>

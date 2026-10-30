@@ -38,17 +38,19 @@ Type `/geevs-agent-team:setup`. Claude confirms the safety rules were added: it 
 ## Part 6: Try something of your own
 Use a copy of a real project folder. Repeat Part 3 there, then type `/geevs-agent-team:deliver` followed by what you want.
 
-## Part 7: Use it in a normal chat too
-1. In a Code session, paste: "Copy the file chat/agent-team.zip from the GitHub repository Dolat-Hamza/geevs-ai-skills to my Desktop."
-2. In Claude, open **Settings → Capabilities → Skills**, choose **Upload skill**, pick **agent-team.zip**. If Skills isn't there, ask whoever manages your Claude workspace.
-3. Start a new chat with "Use the agent team:" followed by your request, and paste or attach the source material. You get the same flow: questions, a checklist to approve, then the answer with a check table.
+## Part 7: Use it in a normal chat and in Cowork
+1. In Claude, open **Customize → Plugins → Add → Add marketplace** and enter `Dolat-Hamza/geevs-ai-skills`. If asked, connect GitHub and allow the Claude GitHub App to see that repository.
+2. Add **geevs-agent-team**. Check **Settings → Capabilities → Code execution and file creation** is on.
+3. In a new chat, type `/deliver`, pick **geevs-agent-team: deliver**, and paste your request. You get the same steps as in Code, and the same proof script runs before handover.
 
-| | In Claude Code | In a chat |
-|---|---|---|
-| Who checks the work | A separate team member who can't edit it | The same Claude, switching to a strict reviewer |
-| Proof | Automatic checks must pass before handover | A written check: every item, source and sum shown |
-| Works on | Files in a project folder | What you paste or attach |
-| Best for | Code and project files | Documents, figures, checked answers |
+| | Claude Code | Cowork | Chat |
+|---|---|---|---|
+| Questions, checklist you approve, handover | Yes | Yes | Yes |
+| Proof script: tests fail then pass, every figure traced | Yes, required | Yes | Yes, in Claude's sandbox |
+| Separate builder and checker | Yes | Yes | No: one Claude switches role |
+| Budget limit, asks before pushing | Yes | Not tested yet | No |
+
+Already installed it in Code in Part 1? Code keeps using that copy.
 
 ## What's normal
 | You notice | What it means |
@@ -74,4 +76,4 @@ Use a copy of a real project folder. Repeat Part 3 there, then type `/geevs-agen
 - Was anything confusing?
 
 ## Removing it
-Chat version: delete **agent-team** under Settings → Capabilities → Skills. Code version: paste into a Code session `Please run: claude plugin uninstall geevs-agent-team@geevs`, then restart the app. Delete the practice folder from your Desktop.
+Chat and Cowork version: Customize → Plugins → geevs-agent-team → Remove. Code version: paste into a Code session `Please run: claude plugin uninstall geevs-agent-team@geevs`, then restart the app. Delete the practice folder from your Desktop.
