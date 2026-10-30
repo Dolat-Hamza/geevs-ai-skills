@@ -11,6 +11,8 @@ design/UX, business growth, and finance.
 
 See **[CATALOG.md](CATALOG.md)** for the full list with descriptions.
 
+**Trying the agent team?** Follow [TRY-IT.md](TRY-IT.md): a 30-minute, step-by-step test on [examples/practice-project](examples/practice-project).
+
 ## Repository layout
 
 ```
