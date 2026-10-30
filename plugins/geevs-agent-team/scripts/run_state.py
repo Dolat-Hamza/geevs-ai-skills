@@ -21,6 +21,7 @@ MAX_REVIEW_ROUNDS = 3
 DEFAULT_BUDGET_USD = 5.0
 CRITERION = re.compile(r"^- \[[ xX]\] (AC\d+):\s*(.+)$", re.M)
 CHECK = re.compile(r"`[^`]+`")
+PLACEHOLDER = re.compile(r"<[A-Za-z][^<>]*>")
 SPEC_TEMPLATE = """# {goal}
 
 ## Problem
@@ -85,9 +86,11 @@ def cmd_criteria(args):
     criteria = [{"id": cid, "text": text.strip(), "passes": False, "evidence": None} for cid, text in found]
     if not criteria:
         raise StateError("spec.md needs at least one '- [ ] ACn: <statement>. Check: `<how>`'")
-    unchecked = [c["id"] for c in criteria if not CHECK.search(c["text"]) or "<" in c["text"]]
+    unchecked = [c["id"] for c in criteria if not CHECK.search(c["text"]) or PLACEHOLDER.search(c["text"])]
     if unchecked:
-        raise StateError("criteria must name their check in backticks: " + ", ".join(unchecked))
+        raise StateError(
+            "criteria must name a concrete check in backticks, with no <placeholders>: " + ", ".join(unchecked)
+        )
     state["criteria"] = criteria
     save(args.slug, state)
     return f"{len(criteria)} criteria"

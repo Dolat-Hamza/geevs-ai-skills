@@ -1,0 +1,177 @@
+<title>Agent Team Test Report</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: test report. Verdict, how it works, proofs, live checks, cost, defects, gaps. Same tokens as earlier reports. */
+:root{
+  --bg:#f3f4f6; --surface:#ffffff; --surface-2:#e9ecf1; --line:#cfd5de;
+  --fg:#15202b; --muted:#5b6775;
+  --accent:#0f7a6c; --accent-soft:#d6efea;
+  --pass:#2e7d4f; --pass-soft:#dcefe3;
+  --fail:#b3261e; --fail-soft:#f7dcda;
+  --warn:#a15c00; --warn-soft:#f8e7cc;
+  --display:"Sora",system-ui,sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1419; --surface:#171d25; --surface-2:#1f2731; --line:#2f3a47; --fg:#e6ebf0; --muted:#98a4b2;
+  --accent:#3fbfa9; --accent-soft:#143a35; --pass:#5fcf8a; --pass-soft:#163322;
+  --fail:#f2867e; --fail-soft:#3e1d1b; --warn:#e8b05c; --warn-soft:#3a2a12; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0f1419; --surface:#171d25; --surface-2:#1f2731; --line:#2f3a47; --fg:#e6ebf0; --muted:#98a4b2;
+  --accent:#3fbfa9; --accent-soft:#143a35; --pass:#5fcf8a; --pass-soft:#163322;
+  --fail:#f2867e; --fail-soft:#3e1d1b; --warn:#e8b05c; --warn-soft:#3a2a12; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+.wrap{max-width:1040px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+h1{font-size:clamp(26px,4vw,36px);font-weight:700;line-height:1.15}
+h2{font-size:20px;font-weight:600}
+h3{font-size:15px;font-weight:600}
+p{margin:0}
+code{font-family:var(--mono);font-size:.88em}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+header{padding:36px 0 20px;display:grid;gap:10px}
+.lede{color:var(--muted);max-width:70ch}
+section{padding:26px 0 0;display:grid;gap:12px}
+.sub{color:var(--muted);max-width:72ch}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);padding:14px 16px;min-width:0}
+.tile .n{font-family:var(--display);font-size:28px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1;color:var(--pass)}
+.tile .l{font-size:13px;color:var(--muted);margin-top:2px}
+.note{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);padding:14px 16px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:640px}
+th,td{text-align:left;vertical-align:top;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surface-2);font-weight:500}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:500;padding:2px 8px;border-radius:3px;white-space:nowrap}
+.pass{background:var(--pass-soft);color:var(--pass)} .fail{background:var(--fail-soft);color:var(--fail)} .warn{background:var(--warn-soft);color:var(--warn)}
+.flow{font-family:var(--mono);font-size:12.5px;background:var(--surface);border:1px solid var(--line);padding:14px 16px;overflow-x:auto;white-space:pre;line-height:1.7}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.card{background:var(--surface);border:1px solid var(--line);padding:14px 16px;min-width:0}
+.card ul{margin:6px 0 0;padding-left:18px;color:var(--muted);font-size:13.5px}
+.card li{margin:3px 0}
+.quote{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);padding:10px 12px;white-space:pre-wrap;word-break:break-word}
+footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);font-family:var(--mono);font-size:12px;color:var(--muted)}
+@media (max-width:760px){ .tiles{grid-template-columns:repeat(2,minmax(0,1fr))} .two{grid-template-columns:1fr} }
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">geevs-agent-team 1.2.1 · test report · 29 Oct 2026 · Dolat-Hamza/geevs-ai-skills#6 · tbelle912/agentic-process</div>
+  <h1>Agent team test report</h1>
+  <p class="lede">The plugin was rebuilt from Claude Code's documentation and published agent-design research, then tested live in a sandbox FX fee project across three versions. Every figure below comes from files, git history or transcripts on disk.</p>
+</header>
+
+<section aria-label="Verdict">
+  <div class="tiles">
+    <div class="tile"><div class="n">4 / 4</div><div class="l">live delivery runs reached release with evidence for every criterion (1.1.1 and 1.2.0)</div></div>
+    <div class="tile"><div class="n">2 / 2</div><div class="l">proofs worked live: tests failed on old code and passed on the fix; every figure traced to the README</div></div>
+    <div class="tile"><div class="n">$0.52 · $0.48</div><div class="l">bug fix and customer note in 1.2.0, against $15.79 for both in 0.1.x</div></div>
+    <div class="tile"><div class="n">88</div><div class="l">unit tests passing, lint and complexity clean</div></div>
+  </div>
+  <div class="note"><p><b>Bottom line.</b> Your main session runs the process, three agents do isolated work, and anything that must hold is enforced by scripts, permission rules and hooks. Since 1.2.0, a run can only be released with proof. For code, its new tests fail on the old code and pass on the new. For documents, every claim, quote and figure traces to a source line. Live testing found 14 defects across 1.0.0, 1.1.1 and 1.2.0, all fixed. The 1.2.1 fixes are proven by unit tests and by replaying real data from the live run. A full live run on 1.2.1 hasn't happened yet.</p></div>
+</section>
+
+<section>
+  <h2>How it works</h2>
+<div class="flow">/geevs-agent-team:deliver &lt;goal&gt;
+  interview ─▶ research (0–3 researchers, Haiku) ─▶ spec ─▶ [you approve]
+  ─▶ builder (Sonnet, own worktree) ─▶ reviewer (Sonnet, cannot edit, records evidence)
+  ─▶ proofs: code = tests fail before, pass after · documents = every figure traced to a source line
+          ▲───────── failed criteria or proofs, at most 3 reviews ─────────┘
+  ─▶ release summary ─▶ [you push / merge: the permission rules ask first]</div>
+</section>
+
+<section>
+  <h2>Proofs, live in 1.2.0</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Proof</th><th>What it checks</th><th>Live result</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>Checkable criteria</td><td>Every acceptance criterion names its check in backticks</td><td>A criterion with no check was rejected; the real specs were accepted</td><td><span class="pill pass">PASS</span></td></tr>
+      <tr><td>Code: test-first</td><td>New tests run against the old code (must fail) and the branch (must pass)</td><td>Old code exit 1, fix exit 0, commit <code>bdf5588</code>. Release was refused until the proof ran</td><td><span class="pill pass">PASS</span></td></tr>
+      <tr><td>Documents: source tracing</td><td>Each claim is in the document, each quote on its cited line, every number covered</td><td>5 claims traced at commit <code>c8b340e</code>. Removing one claim was caught, with the uncovered numbers named</td><td><span class="pill pass">PASS</span></td></tr>
+      <tr><td>Documents: derived figures (1.2.1)</td><td>A worked-out figure must equal its recomputed calculation</td><td>Replay of the real claims: rejected without a calculation, passed with <code>100 * 1.0 / 100</code>, wrong rate caught</td><td><span class="pill warn">REPLAY</span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="sub">The customer note that passed, as written by the builder agent:</p>
+  <div class="quote">Every transfer has a minimum fee of 2.00 GBP, and fees round half-up to 2 decimals (README.md, line 21). For example, on a transfer of 100 GBP the rate is 1.0% (README.md, line 18), which would be 1.00 GBP, but because that is below the minimum, the fee is 2.00 GBP (README.md, line 21).</div>
+</section>
+
+<section>
+  <h2>Guard checks</h2>
+  <p class="sub">"Replay" means a real hook event was fed to the installed hook, so no approval prompt waited on a person.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Check</th><th>Mechanism</th><th>Observed</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>Setup leaves no tracked changes</td><td>local settings, <code>.git/info/exclude</code></td><td><code>git status --porcelain</code> empty</td><td><span class="pill pass">PASS</span></td></tr>
+      <tr><td>Force push and <code>.env</code> write refused</td><td>local deny rules</td><td>both refused by the permission rules</td><td><span class="pill pass">PASS</span></td></tr>
+      <tr><td>Commit on main asks first</td><td>hook (replay)</td><td><code>"permissionDecision": "ask"</code></td><td><span class="pill pass">PASS</span></td></tr>
+      <tr><td>Can't end mid-build with criteria unchecked</td><td>Stop hook</td><td>first attempt blocked, criteria listed</td><td><span class="pill pass">PASS</span></td></tr>
+      <tr><td>Budget asks before more agents</td><td>hook (replay)</td><td><code>ask</code> past the budget</td><td><span class="pill pass">PASS</span></td></tr>
+      <tr><td>Agent spend captured</td><td>SubagentStop reads agent transcript</td><td>all 4 agents in 1.2.0 logged with cost and model</td><td><span class="pill pass">PASS</span></td></tr>
+      <tr><td>Models as configured</td><td>agent settings</td><td>builder and reviewer <code>claude-sonnet-5-5</code>; researcher <code>claude-haiku-5-5</code></td><td><span class="pill pass">PASS</span></td></tr>
+      <tr><td><code>main</code> untouched, nothing pushed</td><td>git</td><td><code>main</code> unchanged; work only on branches</td><td><span class="pill pass">PASS</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Cost</h2>
+  <p class="sub">Priced from transcript token counts at the published per-model rates. Same sandbox and the same two tasks.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Version</th><th>Bug fix run</th><th>Customer note run</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>0.1.x, every agent on Opus</td><td class="num" colspan="2">$15.79 for both</td><td>12-agent design</td></tr>
+      <tr><td>1.1.1</td><td class="num">$0.82</td><td class="num">$0.57</td><td>builder and reviewer on Sonnet</td></tr>
+      <tr><td>1.2.0</td><td class="num">$0.52</td><td class="num">$0.48</td><td>adds both proofs. The orchestrator's spend after its last agent wasn't captured; fixed in 1.2.1</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><p>About 80 to 90% of each run's usage is the orchestrating session, which ran on Opus. Running it on Sonnet (<code>/model sonnet</code>) is the largest remaining saving. On a subscription these are usage estimates, not bills.</p></div>
+</section>
+
+<section>
+  <h2>Defects found by testing, all fixed</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Found by</th><th>Defect</th><th>Fixed in</th></tr></thead>
+    <tbody>
+      <tr><td>Unit test</td><td>On a repo with no commits, the guard didn't see <code>main</code></td><td>1.0.0</td></tr>
+      <tr><td>Unit test</td><td>Untracked test output would void every review's no-changes check</td><td>1.0.0</td></tr>
+      <tr><td>Code review</td><td>Parallel hooks could overwrite each other's spend writes</td><td>1.1.0</td></tr>
+      <tr><td>1.0.0 live test</td><td>Opt-in marker committed on a branch left <code>main</code> unguarded</td><td>1.1.0</td></tr>
+      <tr><td>1.1.1 live test</td><td>Background agents reported no usage, so agent spend was lost</td><td>1.1.2</td></tr>
+      <tr><td>1.1.1 live test</td><td>Skill text broken by argument substitution and zsh</td><td>1.1.2</td></tr>
+      <tr><td>1.1.1 live test</td><td>Agent worktrees made <code>git status</code> dirty</td><td>1.1.2</td></tr>
+      <tr><td>1.1.1 live test</td><td>Starting a run silently replaced the open one</td><td>1.1.2</td></tr>
+      <tr><td>Unit test</td><td>Quote check compared figures by value, so a 1.00 fee matched a 1.0% rate</td><td>1.2.1</td></tr>
+      <tr><td>1.2.0 live test</td><td>Derived figures passed on any quote, so wrong arithmetic could pass</td><td>1.2.1</td></tr>
+      <tr><td>1.2.0 live test</td><td>Stop gate blocked other sessions working in the same folder</td><td>1.2.1</td></tr>
+      <tr><td>1.2.0 live test</td><td>Stop gate blocked waiting for a background agent</td><td>1.2.1</td></tr>
+      <tr><td>1.2.0 live test</td><td>Orchestrator spend after the last agent not counted</td><td>1.2.1</td></tr>
+      <tr><td>1.2.0 live test</td><td>Any <code>&lt;</code> rejected a criterion, so checks like <code>ms &lt; 50</code> were refused</td><td>1.2.1</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Limits and open items</h2>
+  <div class="two">
+    <div class="card"><h3>Known limits</h3><ul>
+      <li>Permission rules match command prefixes, so they don't stop <code>bash -c</code> or scripts. Use Claude Code sandboxing for a hard boundary.</li>
+      <li>Rules and hooks apply only in clones that ran setup, with Claude Code opened in that folder.</li>
+      <li>The document proof checks that each figure is quoted, declared or correctly calculated. It doesn't check that the reasoning between figures is right.</li>
+      <li>Test files are recognised by path (<code>tests/</code>, <code>test_*</code>, <code>*.test.*</code>, <code>*_test.*</code>).</li>
+    </ul></div>
+    <div class="card"><h3>Not verified</h3><ul>
+      <li>A full live run on 1.2.1. Its fixes are proven by unit tests and by replaying the 1.2.0 run's real data.</li>
+      <li>Real Geevs tasks, and a side-by-side comparison with plain Claude.</li>
+      <li><code>omitClaudeMd</code> on Claude Code 2.1.267.</li>
+      <li><code>claude plugin eval</code> suites: early access, not enabled on this account.</li>
+    </ul></div>
+  </div>
+</section>
+
+<footer>Evidence: reports/live-test-1.0.0.md, live-test-1.1.1.md, live-test-1.2.0.md, sandbox run folders and spend logs · Sources: Claude Code docs (sub-agents, permissions, hooks, costs, prompt caching), Anthropic engineering posts on agents and evals</footer>
+</div>

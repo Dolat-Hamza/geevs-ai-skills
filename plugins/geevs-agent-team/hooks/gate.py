@@ -88,6 +88,9 @@ def on_agent_start(event, root):
     folder, state = active_run(root)
     if state is None:
         return None
+    owner = folder / "owner"
+    if not owner.exists() and event.get("session_id"):
+        owner.write_text(event["session_id"] + "\n")
     main = round(cost.transcript_usd(event.get("transcript_path", ""), state.get("created_at", "")), 4)
     append_spend(folder, {"main_usd": main})
     total = cost.run_total(folder / "spend.jsonl")
@@ -109,11 +112,25 @@ def on_subagent_stop(event, root):
     return None
 
 
+def agents_running(folder):
+    entries = list(cost.json_lines(folder / "spend.jsonl"))
+    started = sum(1 for e in entries if "main_usd" in e and e.get("at") != "stop")
+    finished = len({e.get("agent_id") for e in entries if "agent_id" in e})
+    return started > finished
+
+
+def not_owner(folder, event):
+    owner = folder / "owner"
+    return owner.exists() and owner.read_text().strip() != event.get("session_id")
+
+
 def on_stop(event, root):
-    if event.get("stop_hook_active"):
+    folder, state = active_run(root)
+    if state is None or not_owner(folder, event):
         return None
-    _, state = active_run(root)
-    if state is None:
+    main = cost.transcript_usd(event.get("transcript_path", ""), state.get("created_at", ""))
+    append_spend(folder, {"main_usd": round(main, 4), "at": "stop"})
+    if event.get("stop_hook_active") or agents_running(folder):
         return None
     open_ids = [c["id"] for c in state.get("criteria", []) if not c.get("passes")]
     if state.get("phase") in OPEN_PHASES and open_ids:

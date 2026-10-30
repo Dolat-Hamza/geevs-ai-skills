@@ -121,6 +121,37 @@ class StopGate(Project):
     def test_no_active_run_allows(self):
         self.assertIsNone(self.stop())
 
+    def test_other_session_in_folder_can_stop(self):
+        self.start_run("build", False)
+        (self.root / ".agents/runs/r1/owner").write_text("owner-session\n")
+        observer = run({"hook_event_name": "Stop", "cwd": str(self.root), "session_id": "observer"})[1]
+        owner = run({"hook_event_name": "Stop", "cwd": str(self.root), "session_id": "owner-session"})[1]
+        self.assertIsNone(observer)
+        self.assertEqual(owner["decision"], "block")
+
+    def test_waiting_on_running_agent_can_stop(self):
+        self.start_run("build", False)
+        log = self.root / ".agents/runs/r1/spend.jsonl"
+        log.write_text('{"main_usd": 0}\n')
+        self.assertIsNone(self.stop())
+        log.write_text('{"main_usd": 0}\n{"agent_id": "a1", "usd": 0.1}\n')
+        self.assertEqual(self.stop()["decision"], "block")
+
+    def test_stop_records_final_main_spend_without_counting_a_spawn(self):
+        self.start_run("review", True)
+        self.assertIsNone(self.stop())
+        log = [json.loads(x) for x in (self.root / ".agents/runs/r1/spend.jsonl").read_text().splitlines()]
+        self.assertEqual(log[-1], {"main_usd": 0.0, "at": "stop"})
+        self.start_run_extra_spawn_check()
+
+    def start_run_extra_spawn_check(self):
+        log = self.root / ".agents/runs/r1/spend.jsonl"
+        log.write_text('{"main_usd": 0}\n{"agent_id": "a1", "usd": 0.1}\n{"main_usd": 0.2, "at": "stop"}\n')
+        state = json.loads((self.root / ".agents/runs/r1/progress.json").read_text())
+        state.update(phase="build", criteria=[{"id": "AC1", "passes": False}])
+        (self.root / ".agents/runs/r1/progress.json").write_text(json.dumps(state))
+        self.assertEqual(self.stop()["decision"], "block")
+
     def test_second_stop_attempt_allowed(self):
         self.start_run("build", False)
         result = run({"hook_event_name": "Stop", "cwd": str(self.root), "stop_hook_active": True})[1]
@@ -193,6 +224,30 @@ class Budget(Project):
             }
         )
         self.assertEqual(self.log()[-1]["usd"], 0)
+
+    def test_first_spawn_records_owner_session(self):
+        self.state(5.0)
+        run(
+            {
+                "hook_event_name": "PreToolUse",
+                "tool_name": "Agent",
+                "cwd": str(self.root),
+                "session_id": "s1",
+                "transcript_path": str(self.transcript),
+                "tool_input": {},
+            }
+        )
+        run(
+            {
+                "hook_event_name": "PreToolUse",
+                "tool_name": "Agent",
+                "cwd": str(self.root),
+                "session_id": "s2",
+                "transcript_path": str(self.transcript),
+                "tool_input": {},
+            }
+        )
+        self.assertEqual((self.run_dir / "owner").read_text().strip(), "s1")
 
     def test_spawn_under_budget_passes(self):
         self.state(5.0)

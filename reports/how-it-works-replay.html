@@ -1,0 +1,294 @@
+<title>Agent Team Replay</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a guided replay. Example tabs, six step pills always visible, one large step card below. Copper = you, teal = the Claude team, indigo = automatic check. */
+:root{
+  --bg:#f4f5f7; --surface:#ffffff; --surface-2:#eceff3; --line:#d3d9e1;
+  --fg:#17212b; --muted:#5d6977;
+  --you:#b5651d; --you-soft:#f7e6d4;
+  --team:#0f7a6c; --team-soft:#d8efea;
+  --check:#4458a8; --check-soft:#e0e5f7;
+  --good:#2e7d4f; --good-soft:#ddefe3; --bad:#b3261e; --bad-soft:#f7dedc;
+  --display:"Sora",system-ui,sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1419; --surface:#171d25; --surface-2:#202833; --line:#2f3a47; --fg:#e6ebf0; --muted:#9aa6b4;
+  --you:#e39a5f; --you-soft:#3d2a1a; --team:#3fbfa9; --team-soft:#143a35; --check:#8c9ef0; --check-soft:#232c4a;
+  --good:#5fcf8a; --good-soft:#163322; --bad:#f2867e; --bad-soft:#3e1d1b; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0f1419; --surface:#171d25; --surface-2:#202833; --line:#2f3a47; --fg:#e6ebf0; --muted:#9aa6b4;
+  --you:#e39a5f; --you-soft:#3d2a1a; --team:#3fbfa9; --team-soft:#143a35; --check:#8c9ef0; --check-soft:#232c4a;
+  --good:#5fcf8a; --good-soft:#163322; --bad:#f2867e; --bad-soft:#3e1d1b; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 56px}
+.wrap{max-width:900px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,4.5vw,40px);font-weight:700;line-height:1.12}
+h2{font-size:clamp(21px,3vw,26px);font-weight:600;line-height:1.2}
+p{margin:0}
+header{padding:36px 0 22px;display:grid;gap:12px}
+.lede{color:var(--muted);font-size:17px;max-width:60ch}
+
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tab{font:inherit;font-family:var(--display);font-weight:600;font-size:15px;padding:10px 16px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.tab[aria-selected="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tab:focus-visible,.pill:focus-visible,.nav button:focus-visible{outline:3px solid var(--team);outline-offset:2px}
+
+.pills{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:18px}
+.pill{font:inherit;text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:10px;border-radius:10px;cursor:pointer;display:grid;gap:4px;min-width:0}
+.pill .n{font-family:var(--display);font-weight:700;font-size:13px;color:var(--muted)}
+.pill .t{font-size:13px;line-height:1.3}
+.pill[aria-current="step"]{border-color:var(--fg);box-shadow:0 0 0 1px var(--fg)}
+.pill.done .n::after{content:" ✓";color:var(--good)}
+
+.who{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;padding:4px 11px;border-radius:999px;width:max-content}
+.who::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.you{background:var(--you-soft);color:var(--you)}
+.team{background:var(--team-soft);color:var(--team)}
+.check{background:var(--check-soft);color:var(--check)}
+
+.card{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:clamp(18px,3.5vw,30px);display:grid;gap:16px}
+.card .say{font-size:17px;max-width:62ch}
+.bubble{max-width:62ch;padding:14px 16px;border-radius:14px;font-size:16px}
+.bubble.me{background:var(--you-soft);justify-self:start}
+.bubble.ai{background:var(--surface-2)}
+.qa{display:grid;gap:10px}
+.qa .q{font-weight:600}
+.qa .a{color:var(--muted)}
+.list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.list li{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;align-items:start;padding:10px 12px;background:var(--surface-2);border-radius:10px}
+.box{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);display:grid;place-items:center;font-size:13px;font-weight:700;color:var(--good)}
+.box.on{border-color:var(--good);background:var(--good-soft)}
+.doc{background:var(--surface-2);border-radius:12px;padding:18px 20px;max-width:64ch;font-size:16.5px;line-height:1.65;border:1px solid var(--line)}
+.doc h3{font-size:17px;margin-bottom:8px}
+.match{display:grid;gap:8px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr);gap:10px;align-items:center;padding:10px 12px;background:var(--surface-2);border-radius:10px;font-size:14.5px}
+.row .ok{color:var(--good);font-weight:700;text-align:center}
+.row .src{color:var(--muted)}
+.callout{padding:12px 14px;border-radius:10px;font-size:15px}
+.callout.good{background:var(--good-soft)}
+.callout.bad{background:var(--bad-soft)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:420px;font-size:15px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:13px;color:var(--muted);font-weight:600}
+td.num{font-variant-numeric:tabular-nums}
+.was{color:var(--bad);text-decoration:line-through}
+.now{color:var(--good);font-weight:600}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.fact{background:var(--surface-2);border-radius:10px;padding:12px 14px}
+.fact b{display:block;font-family:var(--display);font-size:20px}
+.fact span{font-size:13.5px;color:var(--muted)}
+.btn{justify-self:start;font-family:var(--display);font-weight:600;font-size:15px;padding:10px 18px;border-radius:999px;background:var(--you);color:var(--bg)}
+
+.nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px}
+.nav button{font:inherit;font-family:var(--display);font-weight:600;font-size:15px;padding:10px 18px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.nav button.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.nav button[disabled]{opacity:.4;cursor:default}
+.nav .pos{font-size:14px;color:var(--muted)}
+
+.summary{margin-top:34px;display:grid;gap:12px}
+.summary .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.summary .item{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;gap:6px}
+.summary .item p{font-size:14.5px;color:var(--muted)}
+footer{margin-top:30px;font-size:13.5px;color:var(--muted)}
+@media (max-width:720px){
+  .pills{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .facts,.summary .grid{grid-template-columns:1fr}
+  .row{grid-template-columns:minmax(0,1fr) 22px;}
+  .row .src{grid-column:1 / 3}
+}
+@media (prefers-reduced-motion:no-preference){ .card{animation:in .25s ease-out} @keyframes in{from{opacity:.6;transform:translateY(4px)}to{opacity:1;transform:none}} }
+</style>
+
+<div class="wrap">
+<header>
+  <h1>What working with the agent team looks like</h1>
+  <p class="lede">A replay of a real test run on 29 October 2026. You ask for something, approve a short plan, and get back finished work that has already been checked. Click through the steps.</p>
+  <div class="tabs" role="tablist" aria-label="Example">
+    <button class="tab" role="tab" id="tab-note" aria-selected="true">Write a customer note</button>
+    <button class="tab" role="tab" id="tab-fix" aria-selected="false">Fix a pricing mistake</button>
+  </div>
+</header>
+
+<nav class="pills" id="pills" aria-label="Steps"></nav>
+<article class="card" id="card" aria-live="polite"></article>
+<div class="nav">
+  <button id="back" type="button">Back</button>
+  <span class="pos" id="pos"></span>
+  <button id="next" class="primary" type="button">Next</button>
+</div>
+
+<section class="summary">
+  <h2>What you actually do</h2>
+  <div class="grid">
+    <div class="item"><span class="who you">You</span><b>Ask and answer</b><p>Say what you want in a sentence, then answer a few questions.</p></div>
+    <div class="item"><span class="who you">You</span><b>Approve the plan</b><p>Nothing starts until you've agreed what "done" means.</p></div>
+    <div class="item"><span class="who you">You</span><b>Approve the result</b><p>It arrives already checked. Nothing goes out until you say so.</p></div>
+  </div>
+</section>
+
+<section class="summary">
+  <h2>How this differs from just asking Claude</h2>
+  <div class="tablewrap" style="background:var(--surface);border:1px solid var(--line);border-radius:12px">
+    <table>
+      <thead><tr><th></th><th>Asking Claude in a normal chat</th><th>Using the agent team</th></tr></thead>
+      <tbody>
+        <tr><td><b>Agreeing what you want</b></td><td>Claude starts straight away on its own reading of the request</td><td>You approve a checklist first, so you both agree what "done" means</td></tr>
+        <tr><td><b>Who checks the work</b></td><td>The same Claude that did the work, if you ask it to</td><td>A separate checker that didn't do the work, every time</td></tr>
+        <tr><td><b>Proof it's right</b></td><td>You read it and judge</td><td>It can't be handed over until the figures trace to sources, or the fix is proven to work</td></tr>
+        <tr><td><b>Safety</b></td><td>Relies on Claude being careful</td><td>Sending, publishing and live changes always wait for you</td></tr>
+        <tr><td><b>Record</b></td><td>The chat history</td><td>A saved plan, evidence and cost for every task</td></tr>
+        <tr><td><b>Speed and cost on small tasks</b></td><td>Faster and cheaper</td><td>Slower and costs more, because of the planning and checking</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="lede" style="font-size:15px">Use a normal chat for quick questions and small edits. Use the agent team when a mistake would be costly: anything client-facing, anything involving money, or work other people will rely on.</p>
+</section>
+
+<section class="summary">
+  <h2>Easy to use, easy to change</h2>
+  <div class="grid">
+    <div class="item"><span class="who team">To use it</span><b>One line</b><p>Type the request in plain English after the deliver command. The team asks for anything else it needs.</p></div>
+    <div class="item"><span class="who you">Mid-task</span><b>Just say so</b><p>Before you approve the plan, tell Claude what to change and it rewrites the checklist. After approval, ask for the change and it goes through the checks again.</p></div>
+    <div class="item"><span class="who check">The team itself</span><b>Written in plain text</b><p>Each team member's role, the checks and the spending limit live in short text files. Ask Claude to change them, for example "make the checker stricter on client documents", and it edits them for you.</p></div>
+  </div>
+  <div class="grid">
+    <div class="item"><b>Works for more than code</b><p>Documents, customer notes and processes go through the same steps as software fixes.</p></div>
+    <div class="item"><b>Spending limit per task</b><p>Each task has a usage budget. Claude asks before going over it.</p></div>
+    <div class="item"><b>Switch it on per project</b><p>Turn it on once in a project folder, and off again by removing one file. Other projects are unaffected.</p></div>
+  </div>
+</section>
+
+<footer>Replay of a real test run, shortened. Both tasks used a small test project, an FX fee calculator with its price list. A full technical record is available separately.</footer>
+</div>
+
+<script>
+const S = {
+  note: [
+    { t: "You ask", who: "you", html: `
+      <div class="bubble me">Write a one-paragraph customer note explaining the minimum fee and rounding rule, with one worked example, citing our price list.</div>
+      <p class="say">That's all you type. The team takes it from here.</p>` },
+    { t: "A few questions", who: "team", html: `
+      <p class="say">Before writing anything, Claude asks only what it can't work out on its own.</p>
+      <div class="qa">
+        <div class="bubble ai"><div class="q">Who is this for?</div><div class="a">Retail customers sending money abroad.</div></div>
+        <div class="bubble ai"><div class="q">Where should the facts come from?</div><div class="a">Only our price list.</div></div>
+        <div class="bubble ai"><div class="q">What counts as done?</div><div class="a">Every figure checked against the price list.</div></div>
+      </div>` },
+    { t: "You approve the plan", who: "you", html: `
+      <p class="say">Claude turns your answers into a checklist. Every item has to be ticked before you see the result.</p>
+      <ul class="list">
+        <li><span class="box"></span>One short paragraph</li>
+        <li><span class="box"></span>States the £2.00 minimum fee and the rounding rule</li>
+        <li><span class="box"></span>Exactly one worked example, with the right numbers</li>
+        <li><span class="box"></span>Doesn't use the £1,000 or £10,000 amounts</li>
+        <li><span class="box"></span>Every figure matches the price list</li>
+        <li><span class="box"></span>Nothing else gets changed</li>
+      </ul>
+      <span class="btn">You: Approved</span>` },
+    { t: "The team writes it", who: "team", html: `
+      <p class="say">One team member drafts the note, separately from everything else.</p>
+      <div class="doc"><h3>Minimum fee and rounding</h3>Every transfer has a minimum fee of 2.00 GBP, and fees round half-up to 2 decimals (README.md, line 21). For example, on a transfer of 100 GBP the rate is 1.0% (README.md, line 18), which would be 1.00 GBP, but because that is below the minimum, the fee is 2.00 GBP (README.md, line 21).</div>
+      <p class="say" style="font-size:14px;color:var(--muted)">This is the note exactly as written. "README.md" is the file that holds the price list, so every reference points to the line the figure came from.</p>` },
+    { t: "A separate checker verifies", who: "check", html: `
+      <p class="say">A different team member who didn't write the note checks every statement against the price list. An automatic check then confirms it.</p>
+      <div class="match">
+        <div class="row"><span>Minimum fee of 2.00 GBP</span><span class="ok">✓</span><span class="src">Price list: "Minimum fee 2.00 GBP."</span></div>
+        <div class="row"><span>Fees round half-up to 2 decimals</span><span class="ok">✓</span><span class="src">Price list: "Fees round half-up to 2 decimals."</span></div>
+        <div class="row"><span>100 GBP is charged at 1.0%</span><span class="ok">✓</span><span class="src">Price list: "under 1,000 · 1.0%"</span></div>
+        <div class="row"><span>That would be 1.00 GBP, below the minimum</span><span class="ok">✓</span><span class="src">Worked out from the 1.0% rate</span></div>
+        <div class="row"><span>So the fee is 2.00 GBP</span><span class="ok">✓</span><span class="src">Price list: "Minimum fee 2.00 GBP."</span></div>
+      </div>
+      <div class="callout bad">To prove the checker works, we hid one source on purpose. It immediately flagged the figures that were no longer backed up.</div>` },
+    { t: "You get the result", who: "you", html: `
+      <ul class="list">
+        <li><span class="box on">✓</span>One short paragraph</li>
+        <li><span class="box on">✓</span>States the £2.00 minimum fee and the rounding rule</li>
+        <li><span class="box on">✓</span>Exactly one worked example, with the right numbers</li>
+        <li><span class="box on">✓</span>Doesn't use the £1,000 or £10,000 amounts</li>
+        <li><span class="box on">✓</span>Every figure matches the price list</li>
+        <li><span class="box on">✓</span>Nothing else got changed</li>
+      </ul>
+      <div class="facts">
+        <div class="fact"><b>About 4½ min</b><span>from start to finished, checked note</span></div>
+        <div class="fact"><b>About $0.48</b><span>of usage for the whole task</span></div>
+        <div class="fact"><b>Nothing sent</b><span>until you approve it</span></div>
+      </div>` }
+  ],
+  fix: [
+    { t: "You report it", who: "you", html: `
+      <div class="bubble me">Transfers of exactly £1,000 and £10,000 are charged the wrong fee. They should get the cheaper rate in our price list.</div>
+      <p class="say">You describe the problem in your own words.</p>` },
+    { t: "A few questions", who: "team", html: `
+      <p class="say">Claude confirms the problem first: £1,000 was being charged £10.00, where the price list says £5.00.</p>
+      <div class="qa">
+        <div class="bubble ai"><div class="q">Who relies on this?</div><div class="a">Our own systems that calculate fees.</div></div>
+        <div class="bubble ai"><div class="q">Any limits on the fix?</div><div class="a">No new tools or add-ons.</div></div>
+        <div class="bubble ai"><div class="q">What counts as done?</div><div class="a">Fees match the price list and every existing check still passes.</div></div>
+      </div>` },
+    { t: "You approve the plan", who: "you", html: `
+      <p class="say">The checklist that has to be ticked before you see the result:</p>
+      <ul class="list">
+        <li><span class="box"></span>£1,000 is charged £5.00 and £10,000 is charged £25.00</li>
+        <li><span class="box"></span>New checks are added that would have caught this mistake</li>
+        <li><span class="box"></span>Amounts just under each band, such as £999.99, are unchanged</li>
+        <li><span class="box"></span>Every existing check still passes</li>
+        <li><span class="box"></span>Only the fee calculation is touched</li>
+      </ul>
+      <span class="btn">You: Approved</span>` },
+    { t: "The team fixes it", who: "team", html: `
+      <p class="say">One team member makes the fix on its own copy of the system, so nothing live is touched.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Transfer</th><th>Before</th><th>After</th><th>Price list says</th></tr></thead>
+        <tbody>
+          <tr><td class="num">£1,000</td><td class="num was">£10.00</td><td class="num now">£5.00</td><td class="num">£5.00</td></tr>
+          <tr><td class="num">£10,000</td><td class="num was">£50.00</td><td class="num now">£25.00</td><td class="num">£25.00</td></tr>
+          <tr><td class="num">£999.99</td><td class="num">£10.00</td><td class="num">£10.00</td><td class="num">£10.00</td></tr>
+          <tr><td class="num">£9,999.99</td><td class="num">£50.00</td><td class="num">£50.00</td><td class="num">£50.00</td></tr>
+        </tbody>
+      </table></div>` },
+    { t: "A separate checker verifies", who: "check", html: `
+      <p class="say">A different team member checks every item on the plan. An automatic check then proves the new tests actually work.</p>
+      <div class="callout bad">Run against the <b>old</b> version, the new checks <b>failed</b>. That shows they catch the mistake.</div>
+      <div class="callout good">Run against the <b>fixed</b> version, they <b>passed</b>, along with all 7 checks in total.</div>
+      <p class="say">The result can't be handed over until this proof has run.</p>` },
+    { t: "You get the result", who: "you", html: `
+      <ul class="list">
+        <li><span class="box on">✓</span>£1,000 is charged £5.00 and £10,000 is charged £25.00</li>
+        <li><span class="box on">✓</span>New checks would have caught this mistake</li>
+        <li><span class="box on">✓</span>Amounts just under each band are unchanged</li>
+        <li><span class="box on">✓</span>Every existing check still passes</li>
+        <li><span class="box on">✓</span>Only the fee calculation was touched</li>
+      </ul>
+      <div class="facts">
+        <div class="fact"><b>About 4½ min</b><span>from report to checked fix</span></div>
+        <div class="fact"><b>About $0.52</b><span>of usage for the whole task</span></div>
+        <div class="fact"><b>Nothing live changed</b><span>until you approve it</span></div>
+      </div>` }
+  ]
+};
+const WHO = { you: "You", team: "Claude team", check: "Automatic check" };
+let ex = "note", step = 0;
+const $ = id => document.getElementById(id);
+
+function render() {
+  const steps = S[ex];
+  $("pills").innerHTML = steps.map((s, i) =>
+    `<button type="button" class="pill${i < step ? " done" : ""}" ${i === step ? 'aria-current="step"' : ""} data-i="${i}">
+       <span class="n">Step ${i + 1}</span><span class="t">${s.t}</span></button>`).join("");
+  const s = steps[step];
+  $("card").innerHTML = `<span class="who ${s.who}">${WHO[s.who]}</span><h2>${s.t}</h2>${s.html}`;
+  $("pos").textContent = `Step ${step + 1} of ${steps.length}`;
+  $("back").disabled = step === 0;
+  $("next").textContent = step === steps.length - 1 ? "Start again" : "Next";
+  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.id === "tab-" + ex)));
+}
+$("pills").addEventListener("click", e => { const b = e.target.closest(".pill"); if (b) { step = +b.dataset.i; render(); } });
+$("back").addEventListener("click", () => { if (step > 0) { step--; render(); } });
+$("next").addEventListener("click", () => { step = step === S[ex].length - 1 ? 0 : step + 1; render(); });
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => { ex = t.id.slice(4); step = 0; render(); }));
+render();
+</script>
