@@ -6,7 +6,7 @@ argument-hint: <goal>
 
 # Deliver: $ARGUMENTS
 
-If you cannot spawn agents, as in a claude.ai chat, follow `chat.md` in this skill's directory instead of the steps below.
+In a claude.ai chat (files under `/home/claude`), or whenever you cannot spawn agents, follow `chat.md` in this skill's directory instead of the steps below.
 
 Below, `RS` stands for `python3 <this skill's base directory>/../../scripts/run_state.py` written out with the absolute path. Run it from the project root. If `.claude/agent-team.local.json` is missing, run `/geevs-agent-team:setup` first.
 
@@ -28,7 +28,7 @@ Spawn `researcher` agents only for open questions: none if the repo or one searc
 ## 4. Spec
 Fill `<run>/spec.md`. Each acceptance criterion is `- [ ] ACn: <observable pass/fail statement>. Check: <command, file:line or source in backticks>`. `RS criteria` rejects any criterion without a backticked check. For a bug, record the exact reproduction command and output; AC1 is that it no longer reproduces. Run `RS criteria <slug>`.
 
-**Gate 1:** show the spec to the user and wait for approval. Then `RS phase <slug> approved`.
+**Gate 1:** paste the full spec text into your message, never just its path, and wait for approval. Then `RS phase <slug> approved`.
 
 ## 5. Build
 `RS phase <slug> build`. Spawn one `builder` with the spec path, a branch name, and what not to touch.

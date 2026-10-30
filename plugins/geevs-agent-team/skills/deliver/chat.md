@@ -3,10 +3,10 @@
 Chat has no agents or hooks, so you run every role yourself and the proofs run as scripts in your code sandbox. `CHECK` stands for `python3 <this skill's base directory>/../../scripts/chat_check.py` written out with the absolute path. If you cannot run code, tell the user to turn on Code execution and file creation under Settings > Capabilities, and stop.
 
 ## 1. Interview
-Ask at most four questions in one message, only what the request and attachments do not answer. Wait for the answers.
+Ask at most four questions in one message, only what the request and attachments do not answer. Wait for the answers. In voice mode, ask one question at a time.
 
 ## 2. Spec
-Reply with numbered acceptance criteria. Each is a pass/fail statement plus its check: the test, the source line, or the sum. End with "Reply approved, or tell me what to change." Do not start until the user replies approved.
+Reply with numbered acceptance criteria written out in the message itself, never a file path. Each is a pass/fail statement plus its check: the test, the source line, or the sum. End with "Reply approved, or tell me what to change." Do not start until the user replies approved.
 
 ## 3. Build
 Work in `/tmp/run/` and save everything as files:
@@ -24,4 +24,4 @@ Then the proofs, which must print `"ok": true`:
 If anything fails, fix it and repeat this step, at most twice. Then stop and report what still fails.
 
 ## 5. Release
-Give the user the work as a file, the criteria with pass evidence, the proof output, and what was not checked. Sending, publishing and merging are the user's.
+Show the finished work in your message and attach it as a downloadable file. Then give the criteria with pass evidence, the proof output, and what was not checked. Sending, publishing and merging are the user's.

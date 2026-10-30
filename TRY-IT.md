@@ -47,6 +47,8 @@ Doesn't need Parts 1 to 6.
 5. Good result: the checker says `"ok": true`; fees 2.51 GBP and 2.00 GBP.
 6. Reply "Change the 250.50 example to say the fee is 2.52 GBP and re-run the check." Good result: `"ok": false`, or Claude refuses.
 
+**By voice:** tap the microphone to dictate your request and answers; it types for you. Voice mode (sound-wave button) talks back and asks one question at a time, but is not yet tested with this plugin. Source: [Using voice mode](https://support.claude.com/en/articles/11101966-using-voice-mode).
+
 ## What's normal
 | You notice | What it means |
 |---|---|

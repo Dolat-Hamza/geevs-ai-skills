@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1 — 2026-10-30
+- Spec and finished work are shown in the chat message, not only as a file path.
+- Chat mode asks one question at a time in voice mode.
+
 ## 1.3.0 — 2026-10-30
 - Chat mode: in a claude.ai chat, where agents and hooks don't load, `deliver` follows `chat.md`. Same gates; the proofs run as `scripts/chat_check.py` in the code sandbox on plain folders.
 - Calcs support `round(x, digits)` half-up, `max` and `min`, so rounded fees and minimums are recomputed instead of given.
