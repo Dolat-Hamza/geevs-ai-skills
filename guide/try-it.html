@@ -59,8 +59,8 @@ table{border-collapse:collapse;width:100%;min-width:480px;font-size:15px}
 th,td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
 th{font-size:13px;color:var(--muted);font-weight:600}
 .checks{list-style:none;margin:0;padding:0;display:grid;gap:8px}
-.checks li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:10px;align-items:start}
-.checks li::before{content:"";width:18px;height:18px;margin-top:3px;border:2px solid var(--line);border-radius:5px}
+.checks li{position:relative;padding-left:34px}
+.checks li::before{content:"";position:absolute;left:0;top:4px;width:18px;height:18px;border:2px solid var(--line);border-radius:5px}
 footer{margin-top:30px;font-size:14px;color:var(--muted)}
 @media (max-width:640px){ .facts{grid-template-columns:1fr} .paste{grid-template-columns:1fr} .copy{justify-self:start} }
 </style>
